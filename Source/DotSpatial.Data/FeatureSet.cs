@@ -2,12 +2,7 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
+//
 // The Original Code is DotSpatial.dll
 // The Initial Developer of this Original Code is Ted Dunsford. Created in August, 2007.
 // Contributor(s): (Open source contributors should list themselves and their modifications here).
@@ -15,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
 using System.Data.OleDb;
@@ -495,130 +489,33 @@ namespace DotSpatial.Data
         }
 
         /// <inheritdoc/>
-        public void CopyFeatures(IFeatureSet source, bool copyAttributes)
+        IFeatureSet IFeatureSet.CopyFeatures(bool withAttributes)
         {
-            ProgressMeter = new ProgressMeter(ProgressHandler, "Copying Features", ShapeIndices.Count);
-            Vertex = CloneableEM.Copy(source.Vertex);
-            _shapeIndices = new List<ShapeRange>();
-            foreach (ShapeRange range in source.ShapeIndices)
-            {
-                _shapeIndices.Add(CloneableEM.Copy(range));
-            }
-
-            if (copyAttributes)
-            {
-                foreach (DataColumn dc in source.GetColumns())
-                {
-                    if (dc != null)
-                    {
-                        DataColumn outCol = new DataColumn(dc.ColumnName, dc.DataType, dc.Expression, dc.ColumnMapping);
-                        Field fld = new Field(outCol);
-                        DataTable.Columns.Add(fld);
-                    }
-                }
-            }
-
-            if (source.AttributesPopulated)
-            {
-                // Handle data table content directly
-                if (!IndexMode)
-                {
-                    // If not in index mode, just handle this using features
-                    Features.SuspendEvents();
-                    int i = 0;
-                    foreach (IFeature f in source.Features)
-                    {
-                        IFeature copy = AddFeature(f.Geometry);
-                        copy.ShapeIndex = ShapeIndices[i];
-                        if (copyAttributes)
-                        {
-                            copy.DataRow.ItemArray = CloneableEM.Copy(f.DataRow.ItemArray);
-                        }
-
-                        i++;
-                    }
-
-                    Features.ResumeEvents();
-                }
-                else
-                {
-                    // We need to copy the attributes, but just copy a datarow
-                    if (copyAttributes)
-                    {
-                        foreach (DataRow row in source.DataTable.Rows)
-                        {
-                            DataRow result = DataTable.NewRow();
-                            result.ItemArray = CloneableEM.Copy(row.ItemArray);
-                            DataTable.Rows.Add(result);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                AttributesPopulated = false;
-
-                // Handle data table content directly
-                if (!IndexMode)
-                {
-                    // If not in index mode, just handle this using features
-                    Features.SuspendEvents();
-                    int i = 0;
-                    foreach (IFeature f in source.Features)
-                    {
-                        IFeature result = AddFeature(f.Geometry);
-                        result.ShapeIndex = ShapeIndices[i];
-                        i++;
-                    }
-
-                    Features.ResumeEvents();
-                }
-
-                if (copyAttributes)
-                {
-                    // We need to copy the attributes, but use the page system
-                    int maxRow = NumRows();
-                    const int pageSize = 10000;
-                    int numPages = (int)Math.Ceiling(maxRow / (double)pageSize);
-                    for (int i = 0; i < numPages; i++)
-                    {
-                        int numRows = pageSize;
-                        if (i == numPages - 1)
-                        {
-                            numRows = numPages - (pageSize * i);
-                        }
-
-                        DataTable dt = source.GetAttributes(i * pageSize, numRows);
-                        SetAttributes(i * pageSize, dt);
-                    }
-                }
-            }
+            return CopySubset("", withAttributes);
         }
 
-        /// <summary>
-        /// The copy subset.
-        /// </summary>
-        /// <param name="indices">
-        /// The indices.
-        /// </param>
-        /// <returns>
-        /// </returns>
+        /// <inheritdoc/>
         IFeatureSet IFeatureSet.CopySubset(List<int> indices)
         {
-            return CopySubset(indices);
+            return CopySubset(indices, true);
         }
 
-        /// <summary>
-        /// The copy subset.
-        /// </summary>
-        /// <param name="filterExpression">
-        /// The filter expression.
-        /// </param>
-        /// <returns>
-        /// </returns>
+        /// <inheritdoc/>
+        IFeatureSet IFeatureSet.CopySubset(List<int> indices, bool withAttributes)
+        {
+            return CopySubset(indices, withAttributes);
+        }
+
+        /// <inheritdoc/>
         IFeatureSet IFeatureSet.CopySubset(string filterExpression)
         {
-            return CopySubset(filterExpression);
+            return CopySubset(filterExpression, true);
+        }
+
+        /// <inheritdoc/>
+        IFeatureSet IFeatureSet.CopySubset(string filterExpression, bool withAttributes)
+        {
+            return CopySubset(filterExpression, withAttributes);
         }
 
         /// <inheritdoc/>
@@ -670,36 +567,6 @@ namespace DotSpatial.Data
         }
 
         /// <inheritdoc/>
-        [Obsolete("Use SelectIndexByAttribute(filterExpression) instead.")] // Marked obsolete in 1.7.
-        public List<int> Find(string filterExpression)
-        {
-            var dt = DataTable;
-            DataRow[] hits = dt.Select(filterExpression);
-            return hits.Select(dr => dt.Rows.IndexOf(dr)).ToList();
-        }
-
-        /// <summary>
-        /// Gets the list of string names available as columns from the specified excel file.
-        /// </summary>
-        /// <param name="xlsFilePath">
-        /// </param>
-        /// <returns>
-        /// </returns>
-        /// Warning. This method should be moved outside of FeatureSet.
-        public List<string> GetColumnNames(string xlsFilePath)
-        {
-            OleDbConnection con =
-                new OleDbConnection(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + xlsFilePath +
-                                    "; Extended Properties=Excel 8.0");
-            // GIS Group of Maryland Environmental Service recommended this query string.
-            OleDbDataAdapter da = new OleDbDataAdapter("select * from [Data$]", con);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return (from DataColumn column in dt.Columns
-                    select column.ColumnName).ToList();
-        }
-
-        /// <inheritdoc/>
         public virtual IFeature GetFeature(int index)
         {
             if (IndexMode == false)
@@ -733,9 +600,13 @@ namespace DotSpatial.Data
         /// <inheritdoc/>
         public virtual Shape GetShape(int index, bool getAttributes)
         {
-            if (IndexMode == false)
+            if (!IndexMode)
             {
-                return new Shape(Features[index]);
+                IFeature f = Features[index];
+                Shape shp = new Shape(f.Geometry, f.FeatureType);
+                if (getAttributes)
+                    shp.Attributes = f.DataRow.ItemArray;
+                return shp;
             }
 
             Shape result = new Shape(FeatureType);
@@ -764,19 +635,19 @@ namespace DotSpatial.Data
 
             // There is presumed to be only a single shape in the output array.
             result.Range.StartIndex = 0;
-            if (AttributesPopulated)
+            if (getAttributes)
             {
-                if (getAttributes)
+                if (AttributesPopulated)
                 {
                     result.Attributes = DataTable.Rows[index].ItemArray;
                 }
-            }
-            else
-            {
-                DataTable dt = GetAttributes(index, 1);
-                if (dt != null && dt.Rows.Count > 0)
+                else
                 {
-                    result.Attributes = dt.Rows[0].ItemArray;
+                    DataTable dt = GetAttributes(index, 1);
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        result.Attributes = dt.Rows[0].ItemArray;
+                    }
                 }
             }
 
@@ -796,27 +667,15 @@ namespace DotSpatial.Data
             OnVerticesInvalidated();
         }
 
-        /// <summary>
-        /// For attributes that are small enough to be loaded into a data table, this
-        /// will join attributes from a foreign table (from an excel file).  This method
-        /// won't create new rows in this table, so only matching members are brought in,
-        /// but no rows are removed either, so not all rows will receive data.
-        /// </summary>
-        /// <param name="xlsFilePath">
-        /// The complete path of the file to join
-        /// </param>
-        /// <param name="localJoinField">
-        /// The field name to join on in this table
-        /// </param>
-        /// <param name="xlsJoinField">
-        /// The field in the foreign table.
-        /// </param>
-        /// <returns>
-        /// A modified featureset with the changes.
-        /// </returns>
-        public IFeatureSet Join(string xlsFilePath, string localJoinField, string xlsJoinField)
+        /// <inheritdoc/>
+        public IFeatureSet Join(DataTable table, string localJoinField, string dataTableJoinField)
         {
-            IFeatureSet res = Open(Filename);
+            if (!table.Columns.Contains(dataTableJoinField))
+            {
+                throw new Exception("The foreign join field specified not found.");
+            }
+
+            var res = Open(Filename);
             if (!res.AttributesPopulated)
             {
                 FillAttributes();
@@ -827,20 +686,8 @@ namespace DotSpatial.Data
                 throw new Exception("The local join field specified is not in this table.");
             }
 
-            // This connection string will not likely work on 64 bit machines.
-            var con = new OleDbConnection(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source="
-                                                      + xlsFilePath + "; Extended Properties=Excel 8.0");
-            var da = new OleDbDataAdapter("select * from [Data$]", con);
-            var dt = new DataTable();
-            da.Fill(dt);
-
-            if (!dt.Columns.Contains(xlsJoinField))
-            {
-                throw new Exception("The foreign join field specified is not in the xls data source specified.");
-            }
-
             var copyColumns = new List<DataColumn>();
-            foreach (DataColumn column in dt.Columns)
+            foreach (DataColumn column in table.Columns)
             {
                 if (res.DataTable.Columns.Contains(column.ColumnName))
                 {
@@ -848,14 +695,13 @@ namespace DotSpatial.Data
                 }
 
                 copyColumns.Add(column);
-                res.DataTable.Columns.Add(
-                    new DataColumn(column.ColumnName, column.DataType, column.Expression, column.ColumnMapping));
+                res.DataTable.Columns.Add(new DataColumn(column.ColumnName, column.DataType, column.Expression, column.ColumnMapping));
             }
 
             foreach (DataRow row in res.DataTable.Rows)
             {
                 string query;
-                if (dt.Columns[xlsJoinField].DataType == typeof(string))
+                if (table.Columns[dataTableJoinField].DataType == typeof(string))
                 {
                     // Replcase quote with double quote, if need
                     var localJoinStr = (string)row[localJoinField];
@@ -863,14 +709,14 @@ namespace DotSpatial.Data
                     {
                         localJoinStr = localJoinStr.Replace("'", "''");
                     }
-                    query = "[" + xlsJoinField + "] = '" + localJoinStr + "'";
+                    query = "[" + dataTableJoinField + "] = '" + localJoinStr + "'";
                 }
                 else
                 {
-                    query = "[" + xlsJoinField + "] = " + row[localJoinField];
+                    query = "[" + dataTableJoinField + "] = " + row[localJoinField];
                 }
 
-                var result = dt.Select(query);
+                var result = table.Select(query);
 
                 if (result.Length == 0)
                 {
@@ -884,6 +730,18 @@ namespace DotSpatial.Data
             }
 
             return res;
+        }
+
+        /// <inheritdoc/>
+        public IFeatureSet Join(string xlsFilePath, string localJoinField, string xlsJoinField)
+        {
+            // This connection string will not likely work on 64 bit machines.
+            var con = new OleDbConnection(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + xlsFilePath + "; Extended Properties=Excel 8.0");
+            var da = new OleDbDataAdapter("select * from [Data$]", con);
+            var dt = new DataTable();
+            da.Fill(dt);
+
+            return Join(dt, localJoinField, xlsJoinField);
         }
 
         /// <inheritdoc/>
@@ -905,12 +763,9 @@ namespace DotSpatial.Data
                         FeatureType = ShapeIndices[0].FeatureType;
                     }
                 }
-                else
+                else if (Features.Count > 0)
                 {
-                    if (Features.Count > 0)
-                    {
-                        FeatureType = Features[0].FeatureType;
-                    }
+                    FeatureType = Features[0].FeatureType;
                 }
             }
 
@@ -918,7 +773,7 @@ namespace DotSpatial.Data
 
             // Previously I prevented setting of the features list, but I think we can negate that decision.
             // No reason to prevent it that I can see.
-            // Same for the ShapeIndices.  I'd like to simply set them here and prevent the hassle of a
+            // Same for the ShapeIndices. I'd like to simply set them here and prevent the hassle of a
             // pure copy process.
             result.Vertex = Vertex;
             result.ShapeIndices = ShapeIndices;
@@ -942,18 +797,6 @@ namespace DotSpatial.Data
             result.Projection = Projection;
             result.Save();
             Filename = result.Filename;
-        }
-
-        [Obsolete("Use Select(region) instead")] // Marked in 1.7
-        public List<IFeature> IdentifySelect(Extent region)
-        {
-            return Select(region);
-        }
-
-        [Obsolete("Use Select(region, out affectedRegion) instead")] // Marked in 1.7
-        public List<IFeature> IdentifySelect(Extent region, out Extent affectedRegion)
-        {
-            return Select(region, out affectedRegion);
         }
 
         /// <inheritdoc/>
@@ -1096,10 +939,31 @@ namespace DotSpatial.Data
         /// </returns>
         public FeatureSet CopySubset(List<int> indices)
         {
+            return CopySubset(indices, true);
+        }
+
+        /// <summary>
+        /// Retrieves a subset using exclusively the features matching the specified values.
+        /// </summary>
+        /// <param name="indices">
+        /// An integer list of indices to copy into the new FeatureSet.
+        /// </param>
+        /// <param name="withAttributes"></param>
+        /// <returns>
+        /// A FeatureSet with the new items.
+        /// </returns>
+        private FeatureSet CopySubset(List<int> indices, bool withAttributes)
+        {
             List<IFeature> f = new List<IFeature>();
             foreach (int row in indices)
             {
-                f.Add(GetFeature(row));
+                if (withAttributes)
+                    f.Add(GetFeature(row));
+                else
+                {
+                    Shape shp = GetShape(row, false);
+                    f.Add(new Feature(shp.ToGeometry()));
+                }
             }
             FeatureSet copy = new FeatureSet(f);
             copy.Projection = CloneableEM.Copy(Projection);
@@ -1349,7 +1213,7 @@ namespace DotSpatial.Data
                 Envelope minEnv = null;
                 Envelope currentHoleEnv = currentHole.EnvelopeInternal;
                 Coordinate currentHoleFirstPt = currentHole.Coordinates[0];
-                int addToShell = -1; 
+                int addToShell = -1;
 
                 for (int j = 0; j < shells.Count; j++)
                 {
@@ -1401,7 +1265,7 @@ namespace DotSpatial.Data
                 DataColumn[] columns = GetColumns();
                 Dictionary<string, object> rowContent = new Dictionary<string, object>();
                 object[] fixedContent = new object[columns.Length];
-                
+
                 if (shape.Attributes.Length != columns.Length)
                 {
                     throw new ArgumentException("Attribute column count mismatch.");
@@ -1444,12 +1308,13 @@ namespace DotSpatial.Data
         /// <param name="filterExpression">
         /// The string expression to test.
         /// </param>
+        /// <param name="withAttributes"></param>
         /// <returns>
         /// A FeatureSet that has members that only match the specified members.
         /// </returns>
-        private FeatureSet CopySubset(string filterExpression)
+        private FeatureSet CopySubset(string filterExpression, bool withAttributes)
         {
-            return CopySubset(SelectIndexByAttribute(filterExpression));
+            return CopySubset(SelectIndexByAttribute(filterExpression), withAttributes);
         }
 
         /// <summary>
@@ -1472,31 +1337,6 @@ namespace DotSpatial.Data
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the current file path. This is the relative path relative to
-        /// the current project folder. For feature sets coming from a database
-        /// or a web service, the FilePath property is NULL.
-        /// </summary>
-        /// <value>
-        /// The relative file path.
-        /// </value>
-        /// <remarks>This property is used when saving source file information to a DSPX project.</remarks>
-        [Serialize("FilePath")]
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public virtual string FilePath
-        {
-            get
-            {
-                //do not construct FilePath for FeatureSets without a Filename
-                return string.IsNullOrEmpty(Filename) ? null : RelativePathTo(Filename);
-            }
-
-            set
-            {
-                Filename = AbsolutePathTo(value);
-            }
-        }
 
         /// <summary>
         /// Gets whether or not the attributes have all been loaded into the data table.
@@ -1609,12 +1449,6 @@ namespace DotSpatial.Data
                 OnIncludeFeatures(_features);
             }
         }
-
-        /// <summary>
-        /// Gets or sets the file name of a file based feature set. The file name should be the absolute path including 
-        /// the file extension. For feature sets coming from a database or a web service, the Filename property is NULL.
-        /// </summary>
-        public virtual string Filename { get; set; }
 
         /// <summary>
         /// If this is true, then the ShapeIndices and Vertex values are used, and features are created on demand.
@@ -1933,7 +1767,7 @@ namespace DotSpatial.Data
                 }
 
                 foreach (IFeature feature in Features)
-                { 
+                {
                     feature.Geometry.UpdateEnvelope();
                     MyExtent.ExpandToInclude(new Extent(feature.Geometry.EnvelopeInternal));
                 }
@@ -2007,103 +1841,6 @@ namespace DotSpatial.Data
             {
                 _z = value;
             }
-        }
-
-        private static string AbsolutePathTo(string toPath)
-        {
-            if (string.IsNullOrEmpty(toPath))
-                throw new ArgumentNullException("toPath");
-
-            return Path.GetFullPath(toPath);
-        }
-
-        /// <summary>
-        /// Creates a relative path from one file or folder to another.
-        /// </summary>
-        /// <param name="toPath">
-        /// Contains the path that defines the endpoint of the relative path.
-        /// </param>
-        /// <returns>
-        /// The relative path from the start directory to the end path.
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Occurs when the toPath is NULL</exception>
-        //http://weblogs.asp.net/pwelter34/archive/2006/02/08/create-a-relative-path-code-snippet.aspx
-        public static string RelativePathTo(string toPath)
-        {
-            string fromDirectory = Directory.GetCurrentDirectory();
-
-            if (toPath == null)
-                throw new ArgumentNullException("toPath");
-
-            if (Path.IsPathRooted(fromDirectory) && Path.IsPathRooted(toPath))
-            {
-                if (string.Compare(Path.GetPathRoot(fromDirectory), Path.GetPathRoot(toPath), true) != 0)
-                    return toPath;
-            }
-
-            StringCollection relativePath = new StringCollection();
-            string[] fromDirectories = fromDirectory.Split(Path.DirectorySeparatorChar);
-
-            string[] toDirectories = toPath.Split(Path.DirectorySeparatorChar);
-
-            int length = Math.Min(fromDirectories.Length, toDirectories.Length);
-
-            int lastCommonRoot = -1;
-
-            // find common root
-            for (int x = 0; x < length; x++)
-            {
-                if (string.Compare(fromDirectories[x], toDirectories[x], true) != 0)
-                    break;
-
-                lastCommonRoot = x;
-            }
-            if (lastCommonRoot == -1)
-                return toPath;
-
-            // add relative folders in from path
-            for (int x = lastCommonRoot + 1; x < fromDirectories.Length; x++)
-                if (fromDirectories[x].Length > 0)
-                    relativePath.Add("..");
-
-            // add to folders to path
-            for (int x = lastCommonRoot + 1; x < toDirectories.Length; x++)
-                relativePath.Add(toDirectories[x]);
-
-            // create relative path
-            string[] relativeParts = new string[relativePath.Count];
-            relativePath.CopyTo(relativeParts, 0);
-
-            return string.Join(Path.DirectorySeparatorChar.ToString(), relativeParts);
-        }
-
-        /// <summary>
-        /// Creates a relative path from one file or folder to another.
-        /// </summary>
-        /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
-        /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
-        /// <returns>The relative path from the start directory to the end path.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static string MakeRelativePath(string fromPath, string toPath)
-        {
-            if (string.IsNullOrEmpty(fromPath))
-                throw new ArgumentNullException("fromPath");
-            if (string.IsNullOrEmpty(toPath))
-                throw new ArgumentNullException("toPath");
-
-            if (string.IsNullOrEmpty(Path.GetDirectoryName(toPath)))
-                // it looks like we only have a file name.
-                return toPath;
-
-            if (!fromPath.EndsWith(@"\"))
-                fromPath += @"\";
-
-            Uri fromUri = new Uri(fromPath);
-            Uri toUri = new Uri(toPath);
-
-            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-
-            return relativeUri.ToString();
         }
 
         /// <summary>

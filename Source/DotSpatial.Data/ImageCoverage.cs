@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -20,7 +13,6 @@
 
 using System.Collections.Generic;
 using System.Drawing;
-using DotSpatial.Serialization;
 
 namespace DotSpatial.Data
 {
@@ -33,10 +25,6 @@ namespace DotSpatial.Data
     public class ImageCoverage : DataSet, IImageCoverage
     {
         #region Private Variables
-
-        //private RasterBounds _bounds;
-        [Serialize("FileName", ConstructorArgumentIndex = 0)]
-        private string _fileName;
 
         private List<IImageData> _images;
 
@@ -115,15 +103,6 @@ namespace DotSpatial.Data
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets or sets the Filename
-        /// </summary>
-        public string FileName
-        {
-            get { return _fileName; }
-            set { _fileName = value; }
-        }
 
         /// <inheritdoc />
         public int Count

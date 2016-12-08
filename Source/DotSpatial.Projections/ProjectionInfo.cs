@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Projection
 // Description:  The basic module for MapWindow version 6.0
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -47,14 +40,14 @@ namespace DotSpatial.Projections
 
         private double? _scaleFactor;
 
-        private string LongitudeOfCenterAlias;
+        private string _longitudeOfCenterAlias;
 
         // stores the value of the actual parameter name that was used in the original (when the string came from WKT/Esri)
-        private string LatitudeOfOriginAlias;
+        private string _latitudeOfOriginAlias;
 
-        private string FalseEastingAlias;
+        private string _falseEastingAlias;
 
-        private string FalseNorthingAlias;
+        private string _falseNorthingAlias;
 
         #endregion
 
@@ -82,7 +75,7 @@ namespace DotSpatial.Projections
         public string Authority { get; set; }
 
         /// <summary>
-        ///   Gets or sets the athority code
+        /// Gets or sets the athority code.
         /// </summary>
         public int AuthorityCode { get; set; }
 
@@ -95,12 +88,6 @@ namespace DotSpatial.Projections
         ///   The horizontal 0 point in geographic terms
         /// </summary>
         public double? CentralMeridian { get; set; }
-
-        /// <summary>
-        ///   Gets or sets the Reference Code
-        /// </summary>
-        [Obsolete("Use AuthorityCode instead")] // Marked obsolete in 1.7.
-        public int EpsgCode { get; set; }
 
         /// <summary>
         ///   The false easting for this coordinate system
@@ -234,6 +221,8 @@ namespace DotSpatial.Projections
         /// </summary>
         public int? Zone { get; set; }
 
+
+        // ReSharper disable InconsistentNaming
         /// <summary>
         ///   Gets or sets the alpha/ azimuth.
         /// </summary>
@@ -353,7 +342,7 @@ namespace DotSpatial.Projections
         ///   Multiplier to convert map units to 1.0m
         /// </value>
         public double? to_meter { get; set; }
-
+        // ReSharper restore InconsistentNaming
         #endregion
 
         #region Public Methods
@@ -525,13 +514,13 @@ namespace DotSpatial.Projections
 
             if (FalseEasting != null)
             {
-                string alias = FalseEastingAlias ?? "False_Easting";
+                string alias = _falseEastingAlias ?? "False_Easting";
                 result += @"PARAMETER[""" + alias + @"""," + Convert.ToString(FalseEasting / Unit.Meters, CultureInfo.InvariantCulture) + "],";
             }
 
             if (FalseNorthing != null)
             {
-                string alias = FalseNorthingAlias ?? "False_Northing";
+                string alias = _falseNorthingAlias ?? "False_Northing";
                 result += @"PARAMETER[""" + alias + @"""," + Convert.ToString(FalseNorthing / Unit.Meters, CultureInfo.InvariantCulture) + "],";
             }
 
@@ -562,7 +551,7 @@ namespace DotSpatial.Projections
 
             if (LongitudeOfCenter != null)
             {
-                string alias = LongitudeOfCenterAlias ?? "Longitude_Of_Center";
+                string alias = _longitudeOfCenterAlias ?? "Longitude_Of_Center";
                 result += @"PARAMETER[""" + alias + @"""," + Convert.ToString(LongitudeOfCenter, CultureInfo.InvariantCulture) + "],";
             }
 
@@ -578,7 +567,7 @@ namespace DotSpatial.Projections
 
             if (LatitudeOfOrigin != null)
             {
-                string alias = LatitudeOfOriginAlias ?? "Latitude_Of_Origin";
+                string alias = _latitudeOfOriginAlias ?? "Latitude_Of_Origin";
                 result += @"PARAMETER[""" + alias + @"""," + Convert.ToString(LatitudeOfOrigin, CultureInfo.InvariantCulture) + "],";
             }
 
@@ -631,11 +620,10 @@ namespace DotSpatial.Projections
                 info.NoDefs = true;
                 info.Authority = authority;
                 info.AuthorityCode = code;
-                info.EpsgCode = code;
                 return info;
             }
 
-            throw new ArgumentOutOfRangeException("authority", "Authority Code not found.");
+            throw new ArgumentOutOfRangeException("authority", ProjectionMessages.AuthorityCodeNotFound);
         }
 
         /// <summary>
@@ -674,10 +662,14 @@ namespace DotSpatial.Projections
         /// <param name="proj4String">
         /// The proj4String to read in while defining the projection
         /// </param>
-        public static ProjectionInfo FromProj4String(string proj4String)
+        /// <param name="authority">[Optional] Authority, for example "EPSG"</param>
+        /// <param name="authorityCode">[Optional] Authority code, for example 4326</param>
+        public static ProjectionInfo FromProj4String(string proj4String, string authority = null, int authorityCode = -1)
         {
             var info = new ProjectionInfo();
             info.ParseProj4String(proj4String);
+            if (!string.IsNullOrWhiteSpace(authority)) info.Authority = authority;
+            if (authorityCode > 0) info.AuthorityCode = authorityCode;
             return info;
         }
 
@@ -688,9 +680,7 @@ namespace DotSpatial.Projections
         /// </param>
         public static ProjectionInfo Open(string prjFilename)
         {
-            StreamReader sr = File.OpenText(prjFilename);
-            string prj = sr.ReadLine();
-            sr.Close();
+            string prj = File.ReadAllText(prjFilename);
 
             return FromEsriString(prj);
         }
@@ -824,7 +814,7 @@ namespace DotSpatial.Projections
             {
                 Append(result, "k_0", _scaleFactor);
             }
-            
+
             Append(result, "lat_0", LatitudeOfOrigin);
             Append(result, "lon_0", CentralMeridian);
             Append(result, "lat_1", StandardParallel1);
@@ -931,11 +921,11 @@ namespace DotSpatial.Projections
             // This format is supported only for the Single, Double, and BigInteger types.
             if (value is double)
             {
-                value = ((double) value).ToString("R", CultureInfo.InvariantCulture);
+                value = ((double)value).ToString("R", CultureInfo.InvariantCulture);
             }
             else if (value is float)
             {
-                value = ((float) value).ToString("R", CultureInfo.InvariantCulture);
+                value = ((float)value).ToString("R", CultureInfo.InvariantCulture);
             }
 
             result.AppendFormat(CultureInfo.InvariantCulture, " +{0}={1}", name, value);
@@ -992,7 +982,7 @@ namespace DotSpatial.Projections
             if (tmercIsUtm)
             {
                 ScaleFactor = 0.9996; // Default scale factor for utm
-                                      // This also needed to write correct Esri String from given projection 
+                // This also needed to write correct Esri String from given projection 
             }
 
             string[] sections = proj4String.Split('+');
@@ -1020,12 +1010,12 @@ namespace DotSpatial.Projections
                     Geoc = GeographicInfo.Datum.Spheroid.EccentricitySquared() != 0;
                     continue;
                 }
-                else if (s == "south")
+                if (s == "south")
                 {
                     IsSouth = true;
                     continue;
                 }
-                else if (s == "R_A")
+                if (s == "R_A")
                 {
                     //+R_A tells PROJ.4 to use a spherical radius that
                     //gives a sphere with the same surface area as the original ellipsoid.  I
@@ -1034,8 +1024,9 @@ namespace DotSpatial.Projections
                     //the R_A parameter indicates that an authalic auxiliary sphere should be used.
                     //from http://pdl.perl.org/?docs=Transform/Proj4&title=PDL::Transform::Proj4#r_a
                     AuxiliarySphereType = AuxiliarySphereType.Authalic;
+                    continue;
                 }
-                else if (s == "to")
+                if (s == "to")
                 {
                     // some "+to" parameters exist... e.g., DutchRD. but I'm not sure what to do with them.
                     // they seem to specify a second projection
@@ -1101,7 +1092,7 @@ namespace DotSpatial.Projections
                     case "zone":
                         Zone = int.Parse(value, CultureInfo.InvariantCulture);
                         break;
-                  
+
                     case "proj":
 
                         if (value == "longlat")
@@ -1258,8 +1249,8 @@ namespace DotSpatial.Projections
             }
             GeographicInfo.ParseEsriString(gcs);
 
-            FalseEasting = GetParameter(new string[] { "False_Easting", "Easting_At_False_Origin" }, ref FalseEastingAlias, esriString);
-            FalseNorthing = GetParameter(new string[] { "False_Northing", "Northing_At_False_Origin" }, ref FalseNorthingAlias, esriString);
+            FalseEasting = GetParameter(new string[] { "False_Easting", "Easting_At_False_Origin" }, ref _falseEastingAlias, esriString);
+            FalseNorthing = GetParameter(new string[] { "False_Northing", "Northing_At_False_Origin" }, ref _falseNorthingAlias, esriString);
             CentralMeridian = GetParameter("Central_Meridian", esriString);
             // Esri seems to indicate that these should be treated the same, but they aren't here... http://support.esri.com/en/knowledgebase/techarticles/detail/39992
             // CentralMeridian = GetParameter(new string[] { "Longitude_Of_Center", "Central_Meridian", "Longitude_Of_Origin" }, ref LongitudeOfCenterAlias, esriString);
@@ -1270,7 +1261,7 @@ namespace DotSpatial.Projections
             alpha = GetParameter("Azimuth", esriString);
             _longitudeOf1st = GetParameter("Longitude_Of_1st", esriString);
             _longitudeOf2nd = GetParameter("Longitude_Of_2nd", esriString);
-            LatitudeOfOrigin = GetParameter(new[] { "Latitude_Of_Origin", "Latitude_Of_Center", "Central_Parallel" }, ref LatitudeOfOriginAlias, esriString);
+            LatitudeOfOrigin = GetParameter(new[] { "Latitude_Of_Origin", "Latitude_Of_Center", "Central_Parallel" }, ref _latitudeOfOriginAlias, esriString);
             iStart = esriString.LastIndexOf("UNIT", StringComparison.Ordinal);
             string unit = esriString.Substring(iStart, esriString.Length - iStart);
             Unit.ParseEsriString(unit);

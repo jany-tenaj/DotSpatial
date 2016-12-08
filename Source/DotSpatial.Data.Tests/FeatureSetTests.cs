@@ -45,7 +45,7 @@ namespace DotSpatial.Data.Tests
             FeatureSet target = new FeatureSet();
             string relPath1 = @"folder";
             string relPath2 = @"name\states.shp";
-            string relativeFilePath = relPath1 + " " +  relPath2;
+            string relativeFilePath = relPath1 + " " + relPath2;
             string expectedFullPath = Path.Combine(Directory.GetCurrentDirectory(), relPath1) +
                                       " " + relPath2;
             string actualFilePath;
@@ -65,7 +65,7 @@ namespace DotSpatial.Data.Tests
         {
             FeatureSet target = new FeatureSet();
             string relativeFilePath = @"inner\states.shp";
-            string expectedFullPath = Path.Combine(Directory.GetCurrentDirectory(),relativeFilePath);
+            string expectedFullPath = Path.Combine(Directory.GetCurrentDirectory(), relativeFilePath);
 
             string actualFilePath;
             target.FilePath = relativeFilePath;
@@ -121,8 +121,8 @@ namespace DotSpatial.Data.Tests
                 // Now try to open saved shapefile
                 // Points must have same location in WGS1984
                 var openFs = FeatureSet.Open(tmpFile);
-                var fs0 = (Point) openFs.Features[0].Geometry;
-                var c1 = new[] {fs0.X, fs0.Y};
+                var fs0 = (Point)openFs.Features[0].Geometry;
+                var c1 = new[] { fs0.X, fs0.Y };
                 Reproject.ReprojectPoints(c1, z, openFs.Projection, wgs, 0, 1); // reproject back to wgs1984
 
                 Assert.IsTrue(Math.Abs(originalX - c1[0]) < 1e-8);
@@ -157,7 +157,7 @@ namespace DotSpatial.Data.Tests
             {
                 Assert.AreEqual(fs.CoordinateType, actual.CoordinateType);
             }
-            finally 
+            finally
             {
                 FileTools.DeleteShapeFile(outfile);
             }
@@ -195,6 +195,75 @@ namespace DotSpatial.Data.Tests
         {
             var target = new FeatureSet();
             Assert.IsNotNull(target.FeatureLookup);
+        }
+
+        [Test(Description = @"Checks that the Error NoDirEdges isn't thrown. (https://github.com/DotSpatial/DotSpatial/issues/602)")]
+        public void NoDirEdges()
+        {
+            IFeatureSet fs1 = FeatureSet.Open(Path.Combine(_shapefiles, @"noDirEdgeFiles\catchment.shp"));
+            IFeatureSet fs2 = FeatureSet.Open(Path.Combine(_shapefiles, @"noDirEdgeFiles\siteDesignArea.shp"));
+            Assert.DoesNotThrow(() => fs1.Intersection(fs2, FieldJoinType.All, null));
+        }
+
+        [Test(Description =@"Check whether the correct number of features is copied including the attributes.")]
+        public void CopySubsetWithAttributes()
+        {
+            IFeatureSet fs = BuildFeatureSet();
+
+            IFeatureSet res = fs.CopySubset("");
+            Assert.AreEqual(res.Features.Count, 3);
+            Assert.AreEqual(res.Features[0].DataRow["Test"], "hello");
+
+            IFeatureSet res2 = fs.CopySubset("[Test] = 'hello'");
+            Assert.AreEqual(res2.Features.Count, 2);
+            Assert.AreEqual(res2.Features[0].DataRow["Test"], "hello");
+        }
+
+        [Test(Description = @"Check whether the correct number of features is copied and the attributes won't be copied.")]
+        public void CopySubsetWithoutAttributes()
+        {
+            IFeatureSet fs = BuildFeatureSet();
+
+            IFeatureSet res3 = fs.CopySubset("", false);
+            Assert.AreEqual(res3.Features.Count, 3);
+            Assert.AreEqual(res3.Features[0].DataRow.ItemArray.Length, 0);
+
+            IFeatureSet res4 = fs.CopySubset("[Test] = 'hello'", false);
+            Assert.AreEqual(res4.Features.Count, 2);
+            Assert.AreEqual(res4.Features[0].DataRow.ItemArray.Length, 0);
+        }
+
+        public IFeatureSet BuildFeatureSet()
+        {
+            IFeatureSet fs = new FeatureSet(FeatureType.Point);
+            fs.DataTable.Columns.Add("Test", typeof(string));
+            IFeature feat = fs.AddFeature(new Point(10, 10));
+            feat.DataRow["Test"] = "hello";
+            feat = fs.AddFeature(new Point(10, 20));
+            feat.DataRow["Test"] = "hello";
+            feat = fs.AddFeature(new Point(20, 10));
+            feat.DataRow["Test"] = "here";
+            return fs;
+        }
+
+        [Test(Description = @"Check whether all the features get copied including the attributes.")]
+        public void CopyFeaturesWithAttributes()
+        {
+            IFeatureSet fs = BuildFeatureSet();
+
+            IFeatureSet res5 = fs.CopyFeatures(true);
+            Assert.AreEqual(res5.Features.Count, 3);
+            Assert.AreEqual(res5.Features[0].DataRow["Test"], "hello");
+        }
+
+        [Test(Description = @"Check whether all the features get copied and the attributes won't be copied.")]
+        public void CopyFeaturesWithoutAttributes()
+        {
+            IFeatureSet fs = BuildFeatureSet();
+
+            IFeatureSet res6 = fs.CopyFeatures(false);
+            Assert.AreEqual(res6.Features.Count, 3);
+            Assert.AreEqual(res6.Features[0].DataRow.ItemArray.Length, 0);
         }
     }
 }

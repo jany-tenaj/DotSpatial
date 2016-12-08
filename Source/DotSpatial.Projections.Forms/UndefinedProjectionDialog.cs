@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Controls.dll
 // Description:  The Windows Forms user interface controls like the map, legend, toolbox, ribbon and others.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -33,7 +26,15 @@ namespace DotSpatial.Projections.Forms
         private string _originalString;
         private ProjectionInfo _selectedProjection;
         private string _layerName;
+
+        /// <summary>
+        /// Used to remember the windows header text.
+        /// </summary>
         private string _originalFormText;
+
+        /// <summary>
+        /// Indicates whether _originalFormText should be updated when the windows header text gets changed.
+        /// </summary>
         private bool _ignoreTextChanged;
 
         /// <summary>
@@ -127,11 +128,14 @@ namespace DotSpatial.Projections.Forms
                 _layerName = value;
 
                 _ignoreTextChanged = true;
-                Text = String.IsNullOrWhiteSpace(value) ? _originalFormText : _originalFormText + " - " + value;
+                Text = string.IsNullOrWhiteSpace(value) ? _originalFormText : _originalFormText + " - " + value;
                 _ignoreTextChanged = false;
             }
         }
 
+        /// <summary>
+        /// Changes the _originalFormText to Text, if _ignoreTextChanged is not set.
+        /// </summary>
         protected override void OnTextChanged(EventArgs e)
         {
             base.OnTextChanged(e);

@@ -3,13 +3,6 @@
 // Description:  Boolean Element for use in the tool dialog
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is Toolbox.dll for the DotSpatial 4.6/6 ToolManager project
 //
@@ -40,13 +33,13 @@ namespace DotSpatial.Modeling.Forms.Elements
         private void InitializeComponent()
         {
             this._dateTimePicker2 = new DateTimePicker();
-            this.GroupBox1.SuspendLayout();
+            this.GroupBox.SuspendLayout();
             this.SuspendLayout();
             //
             // GroupBox1
             //
-            this.GroupBox1.Controls.Add(this._dateTimePicker2);
-            this.GroupBox1.Controls.SetChildIndex(this._dateTimePicker2, 0);
+            this.GroupBox.Controls.Add(this._dateTimePicker2);
+            this.GroupBox.Controls.SetChildIndex(this._dateTimePicker2, 0);
             //
             // _dateTimePicker2
             //
@@ -61,7 +54,7 @@ namespace DotSpatial.Modeling.Forms.Elements
             //
             this.AutoScaleDimensions = new SizeF(6F, 13F);
             this.Name = "DateTimeElement";
-            this.GroupBox1.ResumeLayout(false);
+            this.GroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
         }
 

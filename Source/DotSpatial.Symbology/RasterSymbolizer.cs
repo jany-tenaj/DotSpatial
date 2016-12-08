@@ -3,13 +3,6 @@
 // Description:  The core libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -137,24 +130,23 @@ namespace DotSpatial.Symbology
                 {   // Use colors that are built into the raster, e.g. GeoTIFF with palette
                     _isElevation = false;
 
-					//use all colors instead of unique colors because unique colors are not allways set/correct
+                    //use all colors instead of unique colors because unique colors are not always set/correct
                     int lastColor = Colors[0].ToArgb(); //changed by jany_ 2015-06-02
                     int firstNr = 0;
 
-					//group succeding values with the same color to the same category
+                    //group succeeding values with the same color to the same category
                     for (int i = 1; i < Colors.Length; i++)
                     {
                         int hash = Colors[i].ToArgb();
-                        if (hash != lastColor || i == Colors.Length - 1)
+                        if (hash != lastColor) //the current color differs from the one before so we add a category for the color before
                         {
-                            ICategory newCat = new ColorCategory(firstNr, i - 1, Colors[firstNr], Colors[firstNr]);
-                            newCat.Range.MaxIsInclusive = true;
-                            newCat.Range.MinIsInclusive = true;
-                            newCat.LegendText = firstNr.ToString();
-                            Scheme.AddCategory(newCat);
+                            AddCategory(firstNr, i - 1, Colors[firstNr]);
                             firstNr = i;
                             lastColor = hash;
                         }
+
+                        if (i == Colors.Length - 1) //this is the last color, so we add the last category
+                            AddCategory(firstNr, i, Colors[firstNr]);
                     }
                 }
                 else // Assume grid is elevation
@@ -165,6 +157,21 @@ namespace DotSpatial.Symbology
                     _scheme.ApplyScheme(ColorSchemeType.FallLeaves, _raster);
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a category with the given values to the Scheme.
+        /// </summary>
+        /// <param name="startValue">First value, that belongs to this category.</param>
+        /// <param name="endValue">Last value, that belongs to this category.</param>
+        /// <param name="color">Color of this category.</param>
+        private void AddCategory(double startValue, double endValue, Color color)
+        {
+            ICategory newCat = new ColorCategory(startValue, endValue, color, color);
+            newCat.Range.MaxIsInclusive = true;
+            newCat.Range.MinIsInclusive = true;
+            newCat.LegendText = startValue.ToString();
+            Scheme.AddCategory(newCat);
         }
 
         #endregion

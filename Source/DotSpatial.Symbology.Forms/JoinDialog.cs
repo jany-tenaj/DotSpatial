@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Symbology.Forms.dll
 // Description:  The core assembly for the DotSpatial 6.0 distribution.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial.dll
 //
@@ -22,6 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.OleDb;
+using System.Linq;
 using System.Windows.Forms;
 using DotSpatial.Data;
 
@@ -234,12 +229,25 @@ namespace DotSpatial.Symbology.Forms
             ofd.Filter = "Excel Files|*.xls";
             if (ofd.ShowDialog(this) != DialogResult.OK) return;
             tbPath.Text = ofd.FileName;
-            List<string> cols = _featureSet.GetColumnNames(ofd.FileName);
+            List<string> cols = GetColumnNamesFromExcel(ofd.FileName);
             cbForeignField.Items.Clear();
             foreach (var col in cols)
             {
                 cbForeignField.Items.Add(col);
             }
+        }
+        
+        private static List<string> GetColumnNamesFromExcel(string xlsFilePath)
+        {
+            OleDbConnection con =
+                new OleDbConnection(@"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + xlsFilePath +
+                                    "; Extended Properties=Excel 8.0");
+            // GIS Group of Maryland Environmental Service recommended this query string.
+            OleDbDataAdapter da = new OleDbDataAdapter("select * from [Data$]", con);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            return (from DataColumn column in dt.Columns
+                    select column.ColumnName).ToList();
         }
 
         private void cmdOk_Click(object sender, EventArgs e)

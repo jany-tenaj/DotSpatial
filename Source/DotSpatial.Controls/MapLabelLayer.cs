@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Controls.dll
 // Description:  The Windows Forms user interface controls like the map, legend, toolbox, ribbon and others.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -37,7 +30,7 @@ using NetTopologySuite.Geometries;
 namespace DotSpatial.Controls
 {
     /// <summary>
-    /// GeoLabelLayer
+    /// This is a specialized FeatureLayer that specifically handles label drawing.
     /// </summary>
     public class MapLabelLayer : LabelLayer, IMapLabelLayer
     {
@@ -521,12 +514,12 @@ namespace DotSpatial.Controls
                 var backBrush = _caches.GetSolidBrush(symb.BackColor);
                 if (symb.FontColor == Color.Transparent)
                 {
-                    using (var backgroundGP = new GraphicsPath())
+                    using (var backgroundGp = new GraphicsPath())
                     {
-                        backgroundGP.AddRectangle(labelBounds);
-                        backgroundGP.FillMode = FillMode.Alternate;
-                        backgroundGP.AddPath(gp, true);
-                        g.FillPath(backBrush, backgroundGP);
+                        backgroundGp.AddRectangle(labelBounds);
+                        backgroundGp.FillMode = FillMode.Alternate;
+                        backgroundGp.AddPath(gp, true);
+                        g.FillPath(backBrush, backgroundGp);
                     }
                 }
                 else
@@ -935,6 +928,7 @@ namespace DotSpatial.Controls
         /// <param name="e"></param>
         /// <param name="labelSize"></param>
         /// <param name="symb"></param>
+        /// <param name="angle"></param>
         /// <returns></returns>
         private static RectangleF PlacePolygonLabel(IGeometry geom, MapArgs e, Func<SizeF> labelSize, ILabelSymbolizer symb, float angle)
         {

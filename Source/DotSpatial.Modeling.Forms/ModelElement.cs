@@ -3,13 +3,6 @@
 // Description:  An abstract class that handles drawing boxes for elements in the modeler window
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is Toolbox.dll for the DotSpatial 4.6/6 ToolManager project
 //
@@ -35,21 +28,11 @@ namespace DotSpatial.Modeling.Forms
     /// </summary>
     public class ModelElement : ICloneable
     {
-        #region --------------- class variables
-
-        private Color _color = Color.Wheat;
-        private Font _font = SystemFonts.MessageBoxFont;
-        private int _height = 100;
-        private double _highlight = 1;
-        private Point _location = new Point(0, 0);
-        private List<ModelElement> _modelElements;
-        private string _name = string.Empty;
-        private ModelShape _shape = ModelShape.Triangle;
-        private int _width = 170;
+        #region Variables
 
         #endregion
 
-        #region --------------- Constructors
+        #region Constructors
 
         /// <summary>
         /// Creates an instance of the model Element
@@ -57,12 +40,20 @@ namespace DotSpatial.Modeling.Forms
         /// </summary>
         public ModelElement(List<ModelElement> modelElements)
         {
-            _modelElements = modelElements;
+            Location = new Point(0, 0);
+            Height = 100;
+            Width = 170;
+            Color = Color.Wheat;
+            Shape = ModelShape.Triangle;
+            Font = SystemFonts.MessageBoxFont;
+            Name = string.Empty;
+            Highlight = 1;
+            ModelElements = modelElements;
         }
 
         #endregion
 
-        #region --------------- Methods
+        #region Methods
 
         /// <summary>
         /// This returns a duplicate of this object.
@@ -88,10 +79,7 @@ namespace DotSpatial.Modeling.Forms
         /// <param name="highlighted">Darkens if true returns to normal if false</param>
         public virtual void Highlighted(bool highlighted)
         {
-            if (highlighted)
-                _highlight = 0.85;
-            else
-                _highlight = 1.0;
+            Highlight = highlighted ? 0.85 : 1.0;
         }
 
         /// <summary>
@@ -149,7 +137,7 @@ namespace DotSpatial.Modeling.Forms
             }
 
             //Draws Ellipse Shapes
-            if (_shape == ModelShape.Ellipse)
+            if (Shape == ModelShape.Ellipse)
             {
                 //Draws the shadow
                 shadowPath.AddEllipse(0, 5, Width + 5, Height);
@@ -165,7 +153,7 @@ namespace DotSpatial.Modeling.Forms
                 graph.DrawEllipse(outlinePen, 1, 1, Width - 5, Height - 5);
 
                 //Draws the text
-                SizeF textSize = graph.MeasureString(_name, _font, Width);
+                SizeF textSize = graph.MeasureString(Name, Font, Width);
                 RectangleF textRect;
                 if ((textSize.Width < Width) || (textSize.Height < Height))
                     textRect = new RectangleF((Width - textSize.Width) / 2, (Height - textSize.Height) / 2, textSize.Width, textSize.Height);
@@ -181,7 +169,7 @@ namespace DotSpatial.Modeling.Forms
             }
 
             //Draws Triangular Shapes
-            if (_shape == ModelShape.Triangle)
+            if (Shape == ModelShape.Triangle)
             {
                 //Draws the shadow
                 Point[] ptShadow = new Point[4];
@@ -241,9 +229,7 @@ namespace DotSpatial.Modeling.Forms
         /// <returns></returns>
         protected virtual bool PointInExtents(Point pt)
         {
-            if ((pt.X > 0 && pt.X < Width) && (pt.Y > 0 && pt.Y < Height))
-                return true;
-            return false;
+            return pt.X > 0 && pt.X < Width && pt.Y > 0 && pt.Y < Height;
         }
 
         /// <summary>
@@ -258,7 +244,7 @@ namespace DotSpatial.Modeling.Forms
             switch (Shape)
             {
                 case ModelShape.Rectangle:
-                    if ((pt.X > 0 && pt.X < Width) && (pt.Y > 0 && pt.Y < Height))
+                    if (pt.X > 0 && pt.X < Width && pt.Y > 0 && pt.Y < Height)
                         return true;
                     break;
 
@@ -295,7 +281,7 @@ namespace DotSpatial.Modeling.Forms
         public virtual bool ElementInRectangle(Rectangle rect)
         {
             IGeometry rectanglePoly;
-            if ((rect.Height == 0) && (rect.Width == 0))
+            if (rect.Height == 0 && rect.Width == 0)
             {
                 rectanglePoly = new NetTopologySuite.Geometries.Point(rect.X, rect.Y);
             }
@@ -327,7 +313,7 @@ namespace DotSpatial.Modeling.Forms
             switch (Shape)
             {
                 case ModelShape.Rectangle:
-                    return (rect.IntersectsWith(Rectangle));
+                    return rect.IntersectsWith(Rectangle);
 
                 case ModelShape.Ellipse:
                     int b = Height / 2;
@@ -348,7 +334,7 @@ namespace DotSpatial.Modeling.Forms
                     }
 
                     Polygon ellipsePoly = new Polygon(new LinearRing(ellipsePoints));
-                    return (ellipsePoly.Intersects(rectanglePoly));
+                    return ellipsePoly.Intersects(rectanglePoly);
 
                 case ModelShape.Triangle:
                     Coordinate[] trianglePoints = new Coordinate[4];
@@ -357,7 +343,7 @@ namespace DotSpatial.Modeling.Forms
                     trianglePoints[2] = new Coordinate(Location.X + Width - 5, Location.Y + ((Height - 5) / 2));
                     trianglePoints[3] = new Coordinate(Location.X, Location.Y);
                     Polygon trianglePoly = new Polygon(new LinearRing(trianglePoints));
-                    return (trianglePoly.Intersects(rectanglePoly));
+                    return trianglePoly.Intersects(rectanglePoly);
 
                 default:
                     return false;
@@ -371,9 +357,7 @@ namespace DotSpatial.Modeling.Forms
         /// <param name="rect"></param>
         protected virtual bool PointInRectangle(Point pt, Rectangle rect)
         {
-            if ((pt.X >= rect.X && pt.X <= (rect.X + rect.Width)) && (pt.Y >= rect.Y && pt.Y <= (rect.Y + rect.Height)))
-                return true;
-            return false;
+            return (pt.X >= rect.X && pt.X <= (rect.X + rect.Width)) && (pt.Y >= rect.Y && pt.Y <= (rect.Y + rect.Height));
         }
 
         /// <summary>
@@ -434,7 +418,7 @@ namespace DotSpatial.Modeling.Forms
 
         private bool IsDownstreamOf(ModelElement potentialUpstream, ModelElement child)
         {
-            foreach (ModelElement mEl in _modelElements)
+            foreach (ModelElement mEl in ModelElements)
             {
                 ArrowElement mAr = mEl as ArrowElement;
                 if (mAr != null)
@@ -465,12 +449,11 @@ namespace DotSpatial.Modeling.Forms
         private List<ModelElement> GetParents(ModelElement child)
         {
             List<ModelElement> listParents = new List<ModelElement>();
-            foreach (ModelElement mEl in _modelElements)
+            foreach (ModelElement mEl in ModelElements)
             {
                 ArrowElement mAr = mEl as ArrowElement;
-                if (mAr != null)
-                    if (mAr.StopElement != null)
-                        if (mAr.StopElement == child) listParents.Add(mAr.StartElement);
+                if (mAr != null && mAr.StopElement != null && mAr.StopElement == child)
+                    listParents.Add(mAr.StartElement);
             }
             return listParents;
         }
@@ -485,12 +468,11 @@ namespace DotSpatial.Modeling.Forms
 
         private bool IsUpstreamOf(ModelElement potentialDownstream, ModelElement parent)
         {
-            foreach (ModelElement mEl in _modelElements)
+            foreach (ModelElement mEl in ModelElements)
             {
                 ArrowElement mAr = mEl as ArrowElement;
-                if (mAr != null)
+                if (mAr != null && mAr.StartElement != null)
                 {
-                    if (mAr.StartElement == null) continue;
                     if (mAr.StartElement == parent)
                     {
                         if (mAr.StopElement == null) continue;
@@ -516,108 +498,71 @@ namespace DotSpatial.Modeling.Forms
         private List<ModelElement> GetChildren(ModelElement parent)
         {
             List<ModelElement> listChildren = new List<ModelElement>();
-            foreach (ModelElement mEl in _modelElements)
+            foreach (ModelElement mEl in ModelElements)
             {
                 ArrowElement mAr = mEl as ArrowElement;
-                if (mAr != null)
-                    if (mAr.StartElement != null)
-                        if (mAr.StartElement == parent) listChildren.Add(mAr.StopElement);
+                if (mAr != null && mAr.StartElement != null && mAr.StartElement == parent)
+                    listChildren.Add(mAr.StopElement);
             }
             return listChildren;
         }
 
         #endregion
 
-        #region --------------- Properties
+        #region Properties
 
         /// <summary>
         /// Gets a list of all elements in the model
         /// </summary>
-        internal List<ModelElement> ModelElements
-        {
-            get { return _modelElements; }
-            set { _modelElements = value; }
-        }
+        internal List<ModelElement> ModelElements { get; set; }
 
         /// <summary>
         /// Returns 1 if the object is not highlighted less than 1 if it is highlighted
         /// </summary>
-        public double Highlight
-        {
-            get { return _highlight; }
-            set { _highlight = value; }
-        }
+        public double Highlight { get; set; }
 
         /// <summary>
         /// Gets or sets the text that is drawn on the element
         /// </summary>
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
+        public string Name { get; set; }
 
         /// <summary>
         /// Gets or sets the font used to draw the text on the element
         /// </summary>
-        public Font Font
-        {
-            get { return _font; }
-            set { _font = value; }
-        }
+        public Font Font { get; set; }
 
         /// <summary>
         /// Gets or Sets the shape of the model component
         /// </summary>
-        public ModelShape Shape
-        {
-            get { return _shape; }
-            set { _shape = value; }
-        }
+        public ModelShape Shape { get; set; }
 
         /// <summary>
         /// Gets or set the base color of the shapes gradient
         /// </summary>
-        public Color Color
-        {
-            get { return _color; }
-            set { _color = value; }
-        }
+        public Color Color { get; set; }
 
         /// <summary>
         /// Gets a rectangle representing the element, top left corner being the location of the parent form of the element
         /// </summary>
         public Rectangle Rectangle
         {
-            get { return (new Rectangle(Location.X, Location.Y, Width, Height)); }
+            get { return new Rectangle(Location.X, Location.Y, Width, Height); }
         }
 
         /// <summary>
         /// Gets or sets the width of the element
         /// </summary>
-        public int Width
-        {
-            get { return _width; }
-            set { _width = value; }
-        }
+        public int Width { get; set; }
 
         /// <summary>
         /// Gets or sets the shape of the element
         /// </summary>
-        public int Height
-        {
-            get { return _height; }
-            set { _height = value; }
-        }
+        public int Height { get; set; }
 
         /// <summary>
         /// Gets or sets the location of the element in the parent form
         /// </summary>
-        public Point Location
-        {
-            get { return _location; }
-            set { _location = value; }
-        }
+        public Point Location { get; set; }
 
         #endregion
     }

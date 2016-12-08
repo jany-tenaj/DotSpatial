@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Symbology.dll
 // Description:  Contains the business logic for symbology layers and symbol categories.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -44,7 +37,7 @@ namespace DotSpatial.Symbology
         private ILabelSymbolizer _symbolizer;
 
 
-        private Expression _exp;
+        private readonly Expression _exp;
 
         #endregion
 
@@ -94,6 +87,10 @@ namespace DotSpatial.Symbology
             return result;
         }
 
+        /// <summary>
+        /// Returns the categories name or "No Name" if the name is not set.
+        /// </summary>
+        /// <returns>The categories name or "No Name" if the name is not set.</returns>
         public override string ToString()
         {
             return string.IsNullOrEmpty(Name) ? "<No Name>" : Name;
@@ -114,14 +111,14 @@ namespace DotSpatial.Symbology
         /// </summary>
         /// <param name="row">Datarow the expression gets calculated for.</param>
         /// <param name="selected">Indicates whether the feature is selected.</param>
-        /// <param name="FID">The FID of the feature, the expression gets calculated for.</param>
+        /// <param name="fid">The FID of the feature, the expression gets calculated for.</param>
         /// <returns>null if there was an error while parsing the expression, else the calculated expression</returns>
-        public string CalculateExpression(DataRow row, bool selected, int FID)
+        public string CalculateExpression(DataRow row, bool selected, int fid)
         {
             string ff = (selected ? _selectionSymbolizer : _symbolizer).FloatingFormat;
             _exp.FloatingFormat = ff != null ? ff.Trim() : "";
             _exp.ParseExpression(_expression);
-            return _exp.CalculateRowValue(row, FID);
+            return _exp.CalculateRowValue(row, fid);
         }
 
         #endregion

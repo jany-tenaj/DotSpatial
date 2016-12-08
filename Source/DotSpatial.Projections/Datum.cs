@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Projection
 // Description:  The basic module for MapWindow version 6.0
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -21,17 +14,12 @@
 // ********************************************************************************************************
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Xml.Serialization;
 
 namespace DotSpatial.Projections
 {
-    /// <summary>
-    /// Datum
-    /// </summary>
     public class Datum : ProjDescriptor, IEsriString
     {
         #region Private Variables
@@ -317,22 +305,19 @@ namespace DotSpatial.Projections
                         _datumtype = DatumType.Param3;
                         break;
                     case "ire65":
-                        _toWgs84 = new[] { 482.530, -130.569, 564.557, -1.042, -.214, -.631, 8.15 };
+                        InitializeToWgs84(new[] { "482.530", "-130.569", "564.557", "-1.042", "-0.214", "-0.631", "8.15" });
                         _spheroid = new Spheroid(Proj4Ellipsoid.AiryModified);
                         _description = "Ireland 1965";
-                        _datumtype = DatumType.Param7;
                         break;
                     case "nzgd49":
-                        _toWgs84 = new[] { 59.47, -5.04, 187.44, 0.47, -0.1, 1.024, -4.5993 };
+                        InitializeToWgs84(new[] { "59.47", "-5.04", "187.44", "0.47", "-0.1", "1.024", "-4.5993" });
                         _spheroid = new Spheroid(Proj4Ellipsoid.International_1909);
                         _description = "New Zealand";
-                        _datumtype = DatumType.Param7;
                         break;
                     case "osgb36":
-                        _toWgs84 = new[] { 446.448, -125.157, 542.060, 0.1502, 0.2470, 0.8421, -20.4894 };
+                        InitializeToWgs84(new[] { "446.448", "-125.157", "542.060", "0.1502", "0.2470", "0.8421", "-20.4894" });
                         _spheroid = new Spheroid(Proj4Ellipsoid.Airy_1830);
                         _description = "Airy 1830";
-                        _datumtype = DatumType.Param7;
                         break;
                 }
             }
@@ -416,16 +401,19 @@ namespace DotSpatial.Projections
         /// Initializes to WGS84.
         /// </summary>
         /// <param name="values">The values.</param>
+        /// <exception cref="ArgumentNullException">Throws if <paramref name="values"/> is null</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throws if <paramref name="values"/> has length not 3 or 7.</exception>
         public void InitializeToWgs84(string[] values)
         {
+            if (values == null) throw new ArgumentNullException("values");
+            if (values.Length != 3 && values.Length != 7)
+                throw new ArgumentOutOfRangeException("values", "Unrecognized ToWgs84 array length. The number of elements in the array should be 3 or 7");
+
             _toWgs84 = new double[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
                 _toWgs84[i] = double.Parse(values[i], CultureInfo.InvariantCulture);
             }
-
-            if (_toWgs84.Length != 3 && _toWgs84.Length != 7)
-                throw new ArgumentOutOfRangeException("Unrecognized ToWgs84 array length. The number of elements in the array should be 3 or 7");
 
             if (_toWgs84.Length == 3)
             {

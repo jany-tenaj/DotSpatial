@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Symbology.dll
 // Description:  Contains the business logic for symbology layers and symbol categories.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -27,7 +20,7 @@ using DotSpatial.Serialization;
 namespace DotSpatial.Symbology
 {
     /// <summary>
-    /// GeoImageLayer
+    /// A layer with drawing characteristics for images.
     /// </summary>
     public class ImageLayer : Layer, IImageLayer
     {
@@ -109,7 +102,7 @@ namespace DotSpatial.Symbology
         #region IImageLayer Members
 
         /// <summary>
-        /// Gets or sets the underlying data for this object
+        /// Gets or sets the underlying data for this object.
         /// </summary>
         [Serialize("ImageData")]
         public new IImageData DataSet
@@ -124,6 +117,10 @@ namespace DotSpatial.Symbology
             }
         }
 
+        /// <summary>
+        /// This updates the things that depend on the DataSet so that they fit to the changed DataSet.
+        /// </summary>
+        /// <param name="value">DataSet that was changed.</param>
         protected virtual void OnDataSetChanged(IImageData value)
         {
             IsVisible = value != null;
@@ -192,6 +189,7 @@ namespace DotSpatial.Symbology
                 ila.ShowProperties(this);
             }
         }
+    
         /// <summary>
         /// Handles export data from this layer.
         /// </summary>

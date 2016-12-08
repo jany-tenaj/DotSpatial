@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -25,9 +18,6 @@ using GeoAPI.Geometries;
 
 namespace DotSpatial.Data
 {
-    /// <summary>
-    /// AffineTransform
-    /// </summary>
     public class AffineTransform
     {
         #region Private Variables
@@ -119,10 +109,10 @@ namespace DotSpatial.Data
         /// <summary>
         ///  Given the row and column, this returns new affine coefficients transformed to that cell
         /// </summary>
-        /// <param name="startRow">The integer row index from 0 to numRows - 1</param>
-        /// <param name="startColumn">The integer column index from 0 to numColumns - 1</param>
-        /// <returns>Transoformed affine coefficients</returns>
-        public double[] TransfromToCorner(int startColumn, int startRow)
+        /// <param name="startRow">The row index from 0 to numRows - 1</param>
+        /// <param name="startColumn">The column index from 0 to numColumns - 1</param>
+        /// <returns>Transformed affine coefficients</returns>
+        public double[] TransfromToCorner(double startColumn, double startRow)
         {
             // X = [0] + [1] * column + [2] * row;
             // Y = [3] + [4] * column + [5] * row;
@@ -165,8 +155,8 @@ namespace DotSpatial.Data
                 rw = (c[3] + c[4] * location.X / c[1] - c[4] * c[0] / c[1] - location.Y) / div;
                 cl = (location.X - c[2] * rw - c[0]) / c[1];
             }
-            var iRow = (int)Math.Floor(rw);
-            var iCol = (int)Math.Floor(cl);
+            var iRow = (int)Math.Round(rw);
+            var iCol = (int)Math.Round(cl);
             return new RcIndex(iRow, iCol);
         }
 

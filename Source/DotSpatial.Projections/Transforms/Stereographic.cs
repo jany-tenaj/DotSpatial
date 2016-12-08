@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Projection
 // Description:  The basic module for MapWindow version 6.0
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The original content was ported from the C language from the 4.6 version of Proj4 libraries.
 // Frank Warmerdam has released the full content of that version under the MIT license which is
@@ -140,7 +133,6 @@ namespace DotSpatial.Projections.Transforms
                         xy[x] = double.NaN;
                         xy[y] = double.NaN;
                         continue;
-                        //ProjectionException(20);
                     }
                     xy[x] = (xy[y] = _akm1 / xy[y]) * cosphi * sinlam;
                     xy[y] *= (_mode == Modes.Equitorial)
@@ -160,7 +152,6 @@ namespace DotSpatial.Projections.Transforms
                         xy[x] = double.NaN;
                         xy[y] = double.NaN;
                         continue;
-                        //ProjectionException(20);
                     }
                     xy[x] = sinlam * (xy[y] = _akm1 * Math.Tan(FORT_PI + .5 * lp[phi]));
                     xy[y] *= coslam;
@@ -206,6 +197,9 @@ namespace DotSpatial.Projections.Transforms
                         halfe = -.5 * E;
                         break;
                 }
+
+                lp[lam] = double.NaN;
+                lp[phi] = double.NaN;
                 for (j = NITER; j-- > 0; phiL = lp[phi])
                 {
                     sinphi = E * Math.Sin(phiL);
@@ -214,13 +208,9 @@ namespace DotSpatial.Projections.Transforms
                     {
                         if (_mode == Modes.SouthPole) lp[phi] = -lp[phi];
                         lp[lam] = (xy[x] == 0 && xy[y] == 0) ? 0 : Math.Atan2(xy[x], xy[y]);
-                        return;
+                        break;
                     }
                 }
-                lp[lam] = double.NaN;
-                lp[phi] = double.NaN;
-                continue;
-                //ProjectionException(20);
             }
         }
 

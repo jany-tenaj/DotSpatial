@@ -924,4 +924,10 @@ Reproject the layer to match the map coordinate system? This will not affect the
   <data name="File_Options" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="NoPrintersInstalled" xml:space="preserve">
+    <value>No printers installed.</value>
+  </data>
+  <data name="ToolManager_ExecutionComplete_UnableToAddLayerReason" xml:space="preserve">
+    <value>Unable to add layer. Reason: </value>
+  </data>
 </root>

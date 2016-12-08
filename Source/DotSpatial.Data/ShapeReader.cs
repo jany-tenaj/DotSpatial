@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial
 //
@@ -97,10 +90,9 @@ namespace DotSpatial.Data
             public Enumerator(ShapeReader parent)
             {
                 _source = parent._source;
-                _count = -1;
-                _index = -1;
                 _pageSize = parent.PageSize;
                 _envelope = parent.Envelope;
+                Reset();
             }
 
             #region IEnumerator<Dictionary<int,Shape>> Members
@@ -125,7 +117,6 @@ namespace DotSpatial.Data
             public bool MoveNext()
             {
                 if (_count < 0) _count = _source.GetShapeCount();
-                _index++;
                 if (_index >= _count) return false;
                 _page = _source.GetShapes(ref _index, _pageSize, _envelope);
                 return true;
@@ -135,7 +126,7 @@ namespace DotSpatial.Data
             public void Reset()
             {
                 _page = null;
-                _index = -1;
+                _index = 0;
                 _count = -1;
             }
 

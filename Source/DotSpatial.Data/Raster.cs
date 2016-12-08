@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial.dll for the DotSpatial project
 //
@@ -389,13 +382,6 @@ namespace DotSpatial.Data
         [Category("Window")]
         [Description("The integer row index for the end row of this raster.  Most of the time this will  be numRows - 1.  However, if this raster is a window taken from a larger raster, then it will be the index of the endRow from the window.")]
         public virtual int EndRow { get; protected set; }
-
-        /// <summary>
-        /// Gets or Sets the complete path and fileName of the current file
-        /// </summary>
-        [Category("Data")]
-        [Description("Gets or Sets the complete path and fileName of the current file")]
-        public virtual string Filename { get; set; }
 
         /// <summary>
         /// Returns the grid file type.  Only Binary or ASCII are supported natively, without GDAL.

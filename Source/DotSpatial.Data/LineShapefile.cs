@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial
 //
@@ -64,7 +57,7 @@ namespace DotSpatial.Data
 
             Filename = fileName;
             IndexMode = true;
-            Header = new ShapefileHeader(fileName);
+            Header = new ShapefileHeader(Filename);
 
             switch (Header.ShapeType)
             {
@@ -81,9 +74,9 @@ namespace DotSpatial.Data
 
             Extent = Header.ToExtent();
             Name = Path.GetFileNameWithoutExtension(fileName);
-            Attributes.Open(fileName);
+            Attributes.Open(Filename);
 
-            FillLines(fileName, progressHandler, this, FeatureType.Line);
+            FillLines(Filename, progressHandler, this, FeatureType.Line);
             ReadProjection();
         }
 
@@ -180,7 +173,7 @@ namespace DotSpatial.Data
             }
             if (shapefile == null) throw new ArgumentNullException("shapefile");
 
-            if (File.Exists(fileName) == false)
+            if (!File.Exists(fileName))
             {
                 throw new FileNotFoundException(DataStrings.FileNotFound_S.Replace("%S", fileName));
             }
@@ -421,11 +414,11 @@ namespace DotSpatial.Data
 
             if (IndexMode)
             {
-                SaveAsIndexed(fileName);
+                SaveAsIndexed(Filename);
                 return;
             }
 
-            var bbWriter = new BufferedBinaryWriter(fileName);
+            var bbWriter = new BufferedBinaryWriter(Filename);
             var indexWriter = new BufferedBinaryWriter(Header.ShxFilename);
             int fid = 0;
             int offset = 50; // the shapefile header starts at 100 bytes, so the initial offset is 50 words
@@ -497,7 +490,7 @@ namespace DotSpatial.Data
                 {
                     //double[] c = points[ipoint];
                     xyVals[ipoint * 2] = points[ipoint][Ordinate.X];
-                    xyVals[ipoint * 2 + 1] = points[ipoint][ Ordinate.Y];
+                    xyVals[ipoint * 2 + 1] = points[ipoint][Ordinate.Y];
                 }
                 bbWriter.Write(xyVals);
                 if (Header.ShapeType == ShapeType.PolyLineZ)
@@ -650,7 +643,7 @@ namespace DotSpatial.Data
 
             offset += contentLength;
             //offset += 4;
-            WriteFileLength(Filename, offset);
+            WriteFileLength(fileName, offset);
             WriteFileLength(Header.ShxFilename, 50 + fid * 4);
             UpdateAttributes();
             SaveProjection();

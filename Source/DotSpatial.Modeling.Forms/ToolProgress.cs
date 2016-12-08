@@ -3,13 +3,6 @@
 // Description:  A form used to show the progress of a tool
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is Toolbox.dll for the DotSpatial 4.6/6 ToolManager project
 //
@@ -33,19 +26,17 @@ namespace DotSpatial.Modeling.Forms
     /// </summary>
     public class ToolProgress : Form, ICancelProgressHandler
     {
-        #region ------------------ Class Variables
+        #region Variables
 
         private Button _btnCancel;
-        private bool _cancelPressed;
         private bool _executionComplete;
         private Label _lblTool;
         private ProgressBar _progressBarTool;
-        private int _toolProgressCount;
         private TextBox _txtBoxStatus;
 
         #endregion
 
-        #region ------------------ constructor
+        #region Constructor
 
         /// <summary>
         /// Creates an instance of the Tool Progress forms and hands over an array of tools which will then be executed
@@ -61,7 +52,7 @@ namespace DotSpatial.Modeling.Forms
 
         #endregion
 
-        #region ------------------- Methods
+        #region Methods
 
         /// <summary>
         /// Handles the progress method necessary to implement IProgress
@@ -100,7 +91,7 @@ namespace DotSpatial.Modeling.Forms
 
         private void UpdateExecutionComplete()
         {
-            _btnCancel.Text = "Close";
+            _btnCancel.Text = ModelingMessageStrings.Close;
             _executionComplete = true;
             
         }
@@ -110,7 +101,7 @@ namespace DotSpatial.Modeling.Forms
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
             _progressBarTool.Value = percent;
-            if (!String.IsNullOrEmpty(message))
+            if (!string.IsNullOrEmpty(message))
             {
                 _txtBoxStatus.AppendText("\r\n" + DateTime.Now + ": " + message);
             }
@@ -122,8 +113,7 @@ namespace DotSpatial.Modeling.Forms
                 Close();
             else
             {
-                _cancelPressed = true;
-                return;
+                Cancel = true;
             }
         }
 
@@ -141,24 +131,17 @@ namespace DotSpatial.Modeling.Forms
 
         #endregion
 
-        #region ---------------------- Properties
+        #region Properties
 
         /// <summary>
-        /// Gets or sets the number of tools that have been succesfully executed
+        /// Gets or sets the number of tools that have been succesfully executed.
         /// </summary>
-        public int ToolProgressCount
-        {
-            get { return _toolProgressCount; }
-            set { _toolProgressCount = value; }
-        }
+        public int ToolProgressCount { get; set; }
 
         /// <summary>
-        /// Returns true if the cancel button was pressed
+        /// Returns true if the cancel button was pressed.
         /// </summary>
-        public bool Cancel
-        {
-            get { return _cancelPressed; }
-        }
+        public bool Cancel { get; private set; }
 
         #endregion
 

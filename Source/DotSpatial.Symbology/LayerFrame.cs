@@ -3,13 +3,6 @@
 // Description:  The core libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial.dll
 //
@@ -128,22 +121,19 @@ namespace DotSpatial.Symbology
         private void Configure()
         {
             Layers = new LayerCollection(this);
-            base.LegendText = SymbologyMessageStrings.LayerFrame_Map_Layers;
-            ContextMenuItems = new List<SymbologyMenuItem>();
-            ContextMenuItems.Add(new SymbologyMenuItem(SymbologyMessageStrings.LayerFrame_RemoveMapFrame, Remove_Click));
-            ContextMenuItems.Add(new SymbologyMenuItem(SymbologyMessageStrings.LayerFrame_ZoomToMapFrame, ZoomToMapFrame_Click));
-            ContextMenuItems.Add(new SymbologyMenuItem(SymbologyMessageStrings.LayerFrame_CreateGroup, CreateGroup_Click));
+            LegendText = SymbologyMessageStrings.LayerFrame_Map_Layers;
+            ContextMenuItems = new List<SymbologyMenuItem>
+            {
+                new SymbologyMenuItem(SymbologyMessageStrings.LayerFrame_ZoomToMapFrame, ZoomToMapFrame_Click),
+                new SymbologyMenuItem(SymbologyMessageStrings.LayerFrame_CreateGroup, CreateGroup_Click)
+            };
 
-            base.LegendSymbolMode = SymbolMode.GroupSymbol;
+            LegendSymbolMode = SymbolMode.GroupSymbol;
             LegendType = LegendType.Group;
             MapFrame = this;
             ParentGroup = this;
             _drawingLayers = new List<ILayer>();
         }
-
-        //private void Properties_Click(object sender, EventArgs e)
-        //{
-        //}
 
         private void CreateGroup_Click(object sender, EventArgs e)
         {
@@ -172,11 +162,6 @@ namespace DotSpatial.Symbology
                     OnExtentsChanged(_viewExtents);
                 }
             }
-        }
-
-        private void Remove_Click(object sender, EventArgs e)
-        {
-            OnRemoveItem();
         }
 
         private void ZoomToMapFrame_Click(object sender, EventArgs e)

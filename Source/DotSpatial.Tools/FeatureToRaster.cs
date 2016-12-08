@@ -1,7 +1,7 @@
 ﻿// *******************************************************************************************************
 // Product: DotSpatial.Tools.FeatureToRaster.cs
 // Description:  Generate a new raster from a given polygon.
-// Copyright & License: See www.DotSpatial.org.
+
 // *******************************************************************************************************
 // Contributor(s): Open source contributors may list themselves and their modifications here.
 // Contribution of code constitutes transferral of copyright from authors to DotSpatial copyright holders. 
@@ -110,12 +110,7 @@ namespace DotSpatial.Tools
         /// <param name="output">The raster that will be created</param>
         /// <param name="cancelProgressHandler">A progress handler for handling progress messages</param>
         /// <returns></returns>
-        public bool Execute(
-            IFeatureSet source,
-            double cellSize,
-            string fieldName,
-            IRaster output,
-            ICancelProgressHandler cancelProgressHandler)
+        public bool Execute(IFeatureSet source, double cellSize, string fieldName, IRaster output, ICancelProgressHandler cancelProgressHandler)
         {
             // Validates the input and output data
             if (source == null || output == null)
@@ -140,8 +135,9 @@ namespace DotSpatial.Tools
                                  };
             _inputParam[2] = new DoubleParam(TextStrings.DesiredCellSize) { HelpText = TextStrings.Themaximumnumber };
             _inputParam[1] = new ListParam(TextStrings.stringnameoffield) { HelpText = TextStrings.Thevalueofeachcell };
-            _outputParam = new Parameter[1];
+            _outputParam = new Parameter[2];
             _outputParam[0] = new RasterParam(TextStrings.OutputRaster) { HelpText = TextStrings.Resultofaverageslope };
+            _outputParam[1] = new BooleanParam(TextStrings.OutputParameter_AddToMap, TextStrings.OutputParameter_AddToMap_CheckboxText, true);
         }
 
         /// <summary>

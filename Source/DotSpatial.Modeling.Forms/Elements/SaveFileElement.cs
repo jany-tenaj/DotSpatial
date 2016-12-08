@@ -3,13 +3,6 @@
 // Description:  Double Parameters returned by an ITool allows the tool to specify a range and default value
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is Toolbox.dll for the DotSpatial 4.6/6 ToolManager project
 //
@@ -92,7 +85,7 @@ namespace DotSpatial.Modeling.Forms.Elements
                     return;
                 TextFile addedTextFile = new TextFile(sfd.FileName);
                 //This inserts the new featureset into the list
-                txtDataTable.Text = Path.GetFileNameWithoutExtension(addedTextFile.FileName);
+                txtDataTable.Text = Path.GetFileNameWithoutExtension(addedTextFile.Filename);
                 Param.Value = addedTextFile;
             }
             base.Status = ToolStatus.Ok;
@@ -109,13 +102,13 @@ namespace DotSpatial.Modeling.Forms.Elements
         {
             this.txtDataTable = new TextBox();
             this.btnAddData = new Button();
-            this.GroupBox1.SuspendLayout();
+            this.GroupBox.SuspendLayout();
             this.SuspendLayout();
             //
             // GroupBox1
             //
-            this.GroupBox1.Controls.Add(this.btnAddData);
-            this.GroupBox1.Controls.SetChildIndex(this.btnAddData, 0);
+            this.GroupBox.Controls.Add(this.btnAddData);
+            this.GroupBox.Controls.SetChildIndex(this.btnAddData, 0);
             //
             // txtDataTable
             //
@@ -140,9 +133,9 @@ namespace DotSpatial.Modeling.Forms.Elements
 
             this.Controls.Add(this.txtDataTable);
             this.Name = "SaveFileElement";
-            this.Controls.SetChildIndex(this.GroupBox1, 0);
+            this.Controls.SetChildIndex(this.GroupBox, 0);
             this.Controls.SetChildIndex(this.txtDataTable, 0);
-            this.GroupBox1.ResumeLayout(false);
+            this.GroupBox.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
         }

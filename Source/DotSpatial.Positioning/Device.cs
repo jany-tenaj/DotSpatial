@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Positioning.dll
 // Description:  A library for managing GPS connections.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from http://gps3.codeplex.com/ version 3.0
 //
@@ -666,16 +659,6 @@ namespace DotSpatial.Positioning
              */
             Open(FileAccess.Read, FileShare.Read);
         }
-
-        ///// <summary>
-        ///// Obsolete.
-        ///// </summary>
-        ///// <returns></returns>
-        //[Obsolete("GPS.NET 3.0 uses 'Device' objects instead of 'Stream' objects to manage GPS data.  Use a method such as 'NmeaInterpreter.Start(Device)' to open a new connection.  By using Device objects, GPS.NET 3.0 can more easily recover from lost connections.")]
-        //public object GetHardwareStream()
-        //{
-        //    throw new NotSupportedException();
-        //}
 
         /// <summary>
         /// Opens a new connection to the device.

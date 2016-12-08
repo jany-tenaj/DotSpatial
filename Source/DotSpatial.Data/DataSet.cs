@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -19,41 +12,27 @@
 // ********************************************************************************************************
 
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using DotSpatial.Projections;
+using DotSpatial.Serialization;
 
 namespace DotSpatial.Data
 {
-    /// <summary>
-    /// DataSet
-    /// </summary>
     public class DataSet : DisposeBase, IDataSet
     {
-        #region Private Variables
+        #region Fields
 
-        private volatile static bool _projectionLibraryTested;
-        private volatile static bool _canProject;
+        private static volatile bool _canProject;
+        private static volatile bool _projectionLibraryTested;
+        private string _fileName;
         private IProgressHandler _progressHandler;
         private ProgressMeter _progressMeter;
         private string _proj4String;
 
         #endregion
-
-        /// <summary>
-        /// Gets whether or not projection is based on having the libraries available.
-        /// </summary>
-        /// <returns></returns>
-        public static bool ProjectionSupported()
-        {
-            if (_projectionLibraryTested)
-            {
-                return _canProject;
-            }
-            _projectionLibraryTested = true;
-            _canProject = AppDomain.CurrentDomain.GetAssemblies().Any(d => d.GetName().Name == "DotSpatial.Projections");
-            return _canProject;
-        }
 
         #region Constructors
 
@@ -67,18 +46,72 @@ namespace DotSpatial.Data
 
         #endregion
 
-        #region Methods
+        #region Properties
 
         /// <summary>
-        /// This can be overridden in specific classes if necessary
+        /// Gets a value indicating whether the DotSpatial.Projections assembly is loaded
         /// </summary>
-        public virtual void Close()
+        /// <returns>Boolean, true if the value can reproject.</returns>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public bool CanReproject
         {
+            get { return ProjectionSupported() && Projection != null && Projection.IsValid; }
         }
 
-        #endregion
+        /// <summary>
+        /// Gets or sets the extent for the dataset.  Usages to Envelope were replaced
+        /// as they required an explicit using to DotSpatial.Topology which is not
+        /// as intuitive.  Extent.ToEnvelope() and new Extent(myEnvelope) convert them.
+        /// This is designed to be a virtual member to be overridden by subclasses,
+        /// and should not be called directly by the constructor of inheriting classes.
+        /// </summary>
+        public virtual Extent Extent
+        {
+            get
+            {
+                return MyExtent;
+            }
+            set
+            {
+                MyExtent = value;
+            }
+        }
 
-        #region Properties
+        /// <summary>
+        /// Gets or sets the file name of a file based data set. The file name should be the absolute path including 
+        /// the file extension. For data sets coming from a database or a web service, the Filename property is NULL.
+        /// </summary>
+        public virtual string Filename
+        {
+            get
+            {
+                return _fileName;
+            }
+            set
+            {
+                _fileName = string.IsNullOrEmpty(value) ? null : Path.GetFullPath(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the current file path. This is the relative path relative to the current project folder. 
+        /// For data sets coming from a database or a web service, the FilePath property is NULL.
+        /// This property is used when saving source file information to a DSPX project.
+        /// </summary>
+        [Serialize("FilePath", ConstructorArgumentIndex = 0)]
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public virtual string FilePath
+        {
+            get
+            {
+                //do not construct FilePath for DataSets without a Filename
+                return string.IsNullOrEmpty(Filename) ? null : FilePathUtils.RelativePathTo(Filename);
+            }
+            set
+            {
+                Filename = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the cached extent variable.  The public Extent is the virtual accessor,
@@ -86,6 +119,32 @@ namespace DotSpatial.Data
         /// and is only visible to inheriting classes, and can be safely set in the constructor.
         /// </summary>
         protected Extent MyExtent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the string name
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the progress handler to use for internal actions taken by this dataset.
+        /// </summary>
+        [Browsable(false)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public virtual IProgressHandler ProgressHandler
+        {
+            get
+            {
+                return _progressHandler;
+            }
+            set
+            {
+                _progressHandler = value;
+                if (_progressMeter == null && value != null)
+                {
+                    _progressMeter = new ProgressMeter(_progressHandler);
+                }
+            }
+        }
 
         /// <summary>
         /// This is an internal place holder to make it easier to pass around a single progress meter
@@ -99,6 +158,11 @@ namespace DotSpatial.Data
             get { return _progressMeter ?? (_progressMeter = new ProgressMeter(ProgressHandler)); }
             set { _progressMeter = value; }
         }
+
+        /// <summary>
+        /// Gets or set the projection string
+        /// </summary>
+        public ProjectionInfo Projection { get; set; }
 
         /// <summary>
         /// Gets or sets the raw projection string for this dataset.  This handles both the
@@ -136,57 +200,6 @@ namespace DotSpatial.Data
         }
 
         /// <summary>
-        /// Gets a value indicating whether the DotSpatial.Projections assembly is loaded
-        /// </summary>
-        /// <returns>Boolean, true if the value can reproject.</returns>
-        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public bool CanReproject
-        {
-            get { return ProjectionSupported() && Projection != null && Projection.IsValid; }
-        }
-
-        /// <summary>
-        /// Reprojects all of the in-ram vertices of featuresets, or else this
-        /// simply updates the "Bounds" of the image object.
-        /// This will also update the projection to be the specified projection.
-        /// </summary>
-        /// <param name="targetProjection">
-        /// The projection information to reproject the coordinates to.
-        /// </param>
-        public virtual void Reproject(ProjectionInfo targetProjection)
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the string name
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets the extent for the dataset.  Usages to Envelope were replaced
-        /// as they required an explicit using to DotSpatial.Topology which is not
-        /// as intuitive.  Extent.ToEnvelope() and new Extent(myEnvelope) convert them.
-        /// This is designed to be a virtual member to be overridden by subclasses,
-        /// and should not be called directly by the constructor of inheriting classes.
-        /// </summary>
-        public virtual Extent Extent
-        {
-            get
-            {
-                return MyExtent;
-            }
-            set
-            {
-                MyExtent = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or set the projection string
-        /// </summary>
-        public ProjectionInfo Projection { get; set; }
-
-        /// <summary>
         /// Gets an enumeration specifying if this data supports time, space, both or neither.
         /// </summary>
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -198,25 +211,15 @@ namespace DotSpatial.Data
         [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string TypeName { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// Gets or sets the progress handler to use for internal actions taken by this dataset.
+        /// This can be overridden in specific classes if necessary
         /// </summary>
-        [Browsable(false)]
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public virtual IProgressHandler ProgressHandler
+        public virtual void Close()
         {
-            get
-            {
-                return _progressHandler;
-            }
-            set
-            {
-                _progressHandler = value;
-                if (_progressMeter == null && value != null)
-                {
-                    _progressMeter = new ProgressMeter(_progressHandler);
-                }
-            }
         }
 
         /// <summary>
@@ -236,6 +239,35 @@ namespace DotSpatial.Data
                 _progressMeter = null;
             }
             base.Dispose(disposeManagedResources);
+        }
+
+        /// <summary>
+        /// Gets whether or not projection is based on having the libraries available.
+        /// </summary>
+        /// <returns></returns>
+        public static bool ProjectionSupported()
+        {
+            if (_projectionLibraryTested)
+            {
+                return _canProject;
+            }
+            _projectionLibraryTested = true;
+            _canProject = AppDomain.CurrentDomain.GetAssemblies().Any(d => d.GetName().Name == "DotSpatial.Projections");
+            return _canProject;
+        }
+
+      
+
+        /// <summary>
+        /// Reprojects all of the in-ram vertices of featuresets, or else this
+        /// simply updates the "Bounds" of the image object.
+        /// This will also update the projection to be the specified projection.
+        /// </summary>
+        /// <param name="targetProjection">
+        /// The projection information to reproject the coordinates to.
+        /// </param>
+        public virtual void Reproject(ProjectionInfo targetProjection)
+        {
         }
 
         #endregion

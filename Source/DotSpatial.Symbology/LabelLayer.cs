@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Symbology.dll
 // Description:  Contains the business logic for symbology layers and symbol categories.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -25,9 +18,6 @@ using DotSpatial.Serialization;
 
 namespace DotSpatial.Symbology
 {
-    /// <summary>
-    /// LabelLayer
-    /// </summary>
     public class LabelLayer : Layer, ILabelLayer
     {
         #region Events
@@ -46,10 +36,7 @@ namespace DotSpatial.Symbology
 
         #region Private Variables
 
-        private Dictionary<IFeature, LabelDrawState> _drawnStates;
-        private FastLabelDrawnState[] _fastDrawnStates;
         private IFeatureLayer _featureLayer;
-        private IFeatureSet _featureSet;
 
         [Serialize("Symbology")]
         private ILabelScheme _symbology;
@@ -72,7 +59,7 @@ namespace DotSpatial.Symbology
         /// <param name="inFeatureSet"></param>
         public LabelLayer(IFeatureSet inFeatureSet)
         {
-            _featureSet = inFeatureSet;
+            FeatureSet = inFeatureSet;
             Configure();
         }
 
@@ -82,14 +69,14 @@ namespace DotSpatial.Symbology
         /// <param name="inFeatureLayer"></param>
         public LabelLayer(IFeatureLayer inFeatureLayer)
         {
-            _featureSet = inFeatureLayer.DataSet;
+            FeatureSet = inFeatureLayer.DataSet;
             _featureLayer = inFeatureLayer;
             Configure();
         }
 
         private void Configure()
         {
-            if (_featureSet != null) MyExtent = _featureSet.Extent.Copy();
+            if (FeatureSet != null) MyExtent = FeatureSet.Extent.Copy();
             _symbology = new LabelScheme();
         }
 
@@ -110,16 +97,16 @@ namespace DotSpatial.Symbology
         /// </summary>
         public virtual void CreateLabels()
         {
-            if (_featureSet != null)
+            if (FeatureSet != null)
             {
-                if (_featureSet.IndexMode)
+                if (FeatureSet.IndexMode)
                 {
                     CreateIndexedLabels();
                     return;
                 }
             }
-            _drawnStates = new Dictionary<IFeature, LabelDrawState>();
-            if (_featureSet == null) return;
+            DrawnStates = new Dictionary<IFeature, LabelDrawState>();
+            if (FeatureSet == null) return;
             //DataTable dt = _featureSet.DataTable; // if working correctly, this should auto-populate
             if (Symbology == null) return;
 
@@ -127,24 +114,16 @@ namespace DotSpatial.Symbology
             {
                 List<IFeature> features;
                 if (!string.IsNullOrWhiteSpace(category.FilterExpression))
-                {
                     features = FeatureSet.SelectByAttribute(category.FilterExpression);
-                }
                 else
-                {
                     features = FeatureSet.Features.ToList();
-                }
 
                 foreach (IFeature feature in features)
                 {
-                    if (_drawnStates.ContainsKey(feature))
-                    {
-                        _drawnStates[feature] = new LabelDrawState(category);
-                    }
+                    if (DrawnStates.ContainsKey(feature))
+                        DrawnStates[feature] = new LabelDrawState(category);
                     else
-                    {
-                        _drawnStates.Add(feature, new LabelDrawState(category));
-                    }
+                        DrawnStates.Add(feature, new LabelDrawState(category));
                 }
             }
         }
@@ -162,7 +141,7 @@ namespace DotSpatial.Symbology
             if (features.Count == 0) return false;
             foreach (IFeature feature in features)
             {
-                _drawnStates[feature].Selected = true;
+                DrawnStates[feature].Selected = true;
             }
             return true;
         }
@@ -172,8 +151,8 @@ namespace DotSpatial.Symbology
         /// </summary>
         protected void CreateIndexedLabels()
         {
-            if (_featureSet == null) return;
-            _fastDrawnStates = new FastLabelDrawnState[_featureSet.ShapeIndices.Count];
+            if (FeatureSet == null) return;
+            FastDrawnStates = new FastLabelDrawnState[FeatureSet.ShapeIndices.Count];
 
             //DataTable dt = _featureSet.DataTable; // if working correctly, this should auto-populate
             if (Symbology == null) return;
@@ -185,14 +164,14 @@ namespace DotSpatial.Symbology
                     List<int> features = FeatureSet.SelectIndexByAttribute(category.FilterExpression);
                     foreach (int feature in features)
                     {
-                        _fastDrawnStates[feature] = new FastLabelDrawnState(category);
+                        FastDrawnStates[feature] = new FastLabelDrawnState(category);
                     }
                 }
                 else
                 {
-                    for (int i = 0; i < _fastDrawnStates.Length; i++)
+                    for (int i = 0; i < FastDrawnStates.Length; i++)
                     {
-                        _fastDrawnStates[i] = new FastLabelDrawnState(category);
+                        FastDrawnStates[i] = new FastLabelDrawnState(category);
                     }
                 }
             }
@@ -209,7 +188,7 @@ namespace DotSpatial.Symbology
             if (features.Count == 0) return false;
             foreach (IFeature feature in features)
             {
-                _drawnStates[feature].Selected = false;
+                DrawnStates[feature].Selected = false;
             }
             return true;
         }
@@ -223,39 +202,18 @@ namespace DotSpatial.Symbology
         /// each label.
         /// </summary>
         [ShallowCopy]
-        public Dictionary<IFeature, LabelDrawState> DrawnStates
-        {
-            get { return _drawnStates; }
-            set
-            {
-                _drawnStates = value;
-            }
-        }
+        public Dictionary<IFeature, LabelDrawState> DrawnStates { get; set; }
 
         /// <summary>
         /// Gets or sets the indexed collection of drawn states
         /// </summary>
-        public FastLabelDrawnState[] FastDrawnStates
-        {
-            get { return _fastDrawnStates; }
-            set { _fastDrawnStates = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a valid IList of ILabels.  This can just be a List of labels, but allows for
-        /// custom list development later.
-        /// </summary>
-        public IList<ILabel> Labels { get; set; }
+        public FastLabelDrawnState[] FastDrawnStates { get; set; }
 
         /// <summary>
         /// Gets or sets the featureSet that defines the text for the labels on this layer.
         /// </summary>
         [ShallowCopy]
-        public IFeatureSet FeatureSet
-        {
-            get { return _featureSet; }
-            set { _featureSet = value; }
-        }
+        public IFeatureSet FeatureSet { get; set; }
 
         /// <summary>
         /// Gets or sets an optional layer to link this layer to.  If this is specified, then drawing will
@@ -268,7 +226,7 @@ namespace DotSpatial.Symbology
             set
             {
                 _featureLayer = value;
-                _featureSet = _featureLayer.DataSet;
+                FeatureSet = _featureLayer.DataSet;
             }
         }
 

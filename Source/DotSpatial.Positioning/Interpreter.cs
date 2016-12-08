@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Positioning.dll
 // Description:  A library for managing GPS connections.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from http://gps3.codeplex.com/ version 3.0
 //
@@ -422,12 +415,6 @@ namespace DotSpatial.Positioning
             if (Stopped != null)
                 Stopped(this, EventArgs.Empty);
         }
-
-        ///// <summary>
-        ///// Obsolete.  See compiler warnings for upgrade help.
-        ///// </summary>
-        //[Obsolete("Use the 'OnDeviceChanged' override to be notified when the interpreter is using a new GPS device.")]
-        //public virtual void OnBaseStreamChanged(Stream obsolete) { throw new NotSupportedException(); }
 
         /// <summary>
         /// Occurs when a connection to a GPS device is suddenly lost.
@@ -1331,18 +1318,6 @@ namespace DotSpatial.Positioning
                 throw new InvalidOperationException("A request to stop the interpreter has timed out.  This can occur if a Start, Pause, or Resume command is also in progress.");
             }
         }
-
-        ///// <summary>
-        ///// Obsolete.  See compiler warnings for upgrade help.
-        ///// </summary>
-        //[Obsolete("In GPS.NET 3.0, recording operations cannot be paused or resumed.  Use 'StopRecording' instead.")]
-        //public void PauseRecording() { throw new NotSupportedException(); }
-
-        ///// <summary>
-        ///// Obsolete.  See compiler warnings for upgrade help.
-        ///// </summary>
-        //[Obsolete("In GPS.NET 3.0, recording operations cannot be paused or resumed.  Use 'StartRecording' instead.")]
-        //public void ResumeRecording() { throw new NotSupportedException(); }
 
         /// <summary>
         /// Temporarily halts processing of GPS data.

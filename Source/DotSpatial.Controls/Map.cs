@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Controls.dll
 // Description:  The Windows Forms user interface controls like the map, legend, toolbox, ribbon and others.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -209,8 +202,8 @@ namespace DotSpatial.Controls
 
             CollisionDetection = false;
 
-            IMapFunction KeyNavigation = MapFunctions.Find(f => f.GetType() == typeof(MapFunctionKeyNavigation));
-            ActivateMapFunction(KeyNavigation);
+            IMapFunction keyNavigation = MapFunctions.Find(f => f.GetType() == typeof(MapFunctionKeyNavigation));
+            ActivateMapFunction(keyNavigation);
             //changed by Jiri Kadlec - default function mode is none
             FunctionMode = FunctionMode.None;
         }
@@ -277,41 +270,6 @@ namespace DotSpatial.Controls
         #region Methods
 
         /// <summary>
-        /// This will add a new label category that will only apply to the specified filter expression.
-        /// This will not remove any existing categories.
-        /// </summary>
-        /// <param name="featureLayer">The feature layer that the labels should be applied to</param>
-        /// <param name="expression">The string expression where field names are in square brackets</param>
-        /// <param name="filterExpression">The string filter expression that controls which features are labeled.
-        /// Field names are in square brackets, strings in single quotes.</param>
-        /// <param name="symbolizer">The label symbolizer that controls the basic appearance of the labels in this
-        /// category.</param>
-        /// <param name="name">The name of the category.</param>
-        [Obsolete("Use featureLayer.AddLabels() instead")] // Marked in 1.7
-        public void AddLabels(IFeatureLayer featureLayer, string expression, string filterExpression, ILabelSymbolizer symbolizer, string name)
-        {
-            featureLayer.AddLabels(expression, filterExpression, symbolizer, name);
-        }
-
-        /// <summary>
-        /// This will add a new label category that will only apply to the specified filter expression.  This will
-        /// not remove any existing categories.
-        /// </summary>
-        /// <param name="featureLayer">The feature layer that the labels should be applied to</param>
-        /// <param name="expression">The string expression where field names are in square brackets</param>
-        /// <param name="filterExpression">The string filter expression that controls which features are labeled.
-        /// Field names are in square brackets, strings in single quotes.</param>
-        /// <param name="symbolizer">The label symbolizer that controls the basic appearance of the labels in this
-        ///  category.</param>
-        /// <param name="width">A geographic width, so that if the map is zoomed to a geographic width smaller than
-        /// this value, labels should appear.</param>
-        [Obsolete("Use featureLayer.AddLabels() instead")] // Marked in 1.7
-        public void AddLabels(IFeatureLayer featureLayer, string expression, string filterExpression, ILabelSymbolizer symbolizer, double width)
-        {
-            featureLayer.AddLabels(expression, filterExpression, symbolizer, width);
-        }
-
-        /// <summary>
         /// Gets the subset of layers that are specifically raster layers, allowing
         /// you to control their symbology.
         /// </summary>
@@ -341,7 +299,7 @@ namespace DotSpatial.Controls
         }
 
         /// <summary>
-        /// Gets a list of just the line layers (and not the general layers)
+        /// Gets a list of just the polygon layers (and not the general layers)
         /// </summary>
         /// <returns></returns>
         public IMapPolygonLayer[] GetPolygonLayers()
@@ -457,7 +415,6 @@ namespace DotSpatial.Controls
                 if (r != null)
                 {
                     results.Add(Layers.Add(r));
-                    continue;
                 }
             }
             return results;
@@ -648,31 +605,6 @@ namespace DotSpatial.Controls
             if (expand) maxExtent.ExpandBy(maxExtent.Width / 10, maxExtent.Height / 10); // work item #84 (Expand target envelope by 10%)
 
             return maxExtent;
-        }
-
-        /// <summary>
-        /// This activates the labels for the specified feature layer that will be the specified expression
-        /// where field names are in square brackets like "[Name]: [Value]".  This will label all the features,
-        /// and remove any previous labeling.
-        /// </summary>
-        /// <param name="featureLayer">The FeatureLayer to apply the labels to.</param>
-        /// <param name="expression">The string label expression to use where field names are in square brackets like
-        /// [Name]</param>
-        /// <param name="font">The font to use for these labels</param>
-        /// <param name="fontColor">The color for the labels</param>
-        [Obsolete("Use featureLayer.AddLabels() instead")] // Marked in 1.7
-        public void AddLabels(IFeatureLayer featureLayer, string expression, Font font, Color fontColor)
-        {
-            featureLayer.AddLabels(expression, font, fontColor);
-        }
-
-        /// <summary>
-        /// Removes any existing label categories
-        /// </summary>
-        [Obsolete("Use featureLayer.ClearLabels() instead")] // Marked in 1.7
-        public void ClearLabels(IFeatureLayer featureLayer)
-        {
-            featureLayer.ClearLabels();
         }
 
         /// <summary>
@@ -901,7 +833,6 @@ namespace DotSpatial.Controls
                         catch
                         {
                             Cursor = Cursors.SizeAll;
-                            break;
                         }
                         break;
 

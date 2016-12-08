@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from DotSpatial.Data.IO.dll
 //
@@ -40,7 +33,7 @@ namespace DotSpatial.Data
         private byte[] _buffer;
         private long _bufferOffset; // Position of the start of the buffer relative to the start of the file
         private int _bufferSize;
-        private string _fileName;
+        private readonly string _fileName;
         private long _fileOffset; // position in the entire file
         private FileStream _fileStream;
         private bool _isBufferLoaded;
@@ -73,8 +66,8 @@ namespace DotSpatial.Data
         {
             //Modified 9/22/09 by L. C. Wilson to open as read-only so it is possible to open read-only files
             //Not sure if elsewhere write access is required
-            _fileName = fileName;
-            _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            _fileName = Path.GetFullPath(fileName);
+            _fileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read);
             _binaryReader = new BinaryReader(_fileStream);
 
             FileInfo fi = new FileInfo(fileName);
@@ -255,7 +248,6 @@ namespace DotSpatial.Data
 
             _fileOffset = startPosition;
             if (_fileStream.CanSeek) _fileStream.Seek(offset, origin);
-            return;
         }
 
         #region Read Methods

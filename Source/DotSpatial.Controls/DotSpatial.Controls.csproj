@@ -48,7 +48,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotSpatial.GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotSpatial.GeoAPI.1.7.4.1\lib\net40-client\DotSpatial.GeoAPI.dll</HintPath>
+      <HintPath>..\packages\DotSpatial.GeoAPI.1.7.4.2\lib\net40-client\DotSpatial.GeoAPI.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="DotSpatial.NetTopologySuite, Version=1.14.2.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
@@ -65,6 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
     <Compile Include="DatelineCrossingMap.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -88,7 +91,7 @@
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PackageManager.cs" />
-    <Compile Include="ShowExtensionsDialog.cs" />
+    <Compile Include="ShowExtensionsDialogMode.cs" />
     <Compile Include="AppManager.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -135,10 +138,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="IMapView.cs" />
-    <Compile Include="IPreviewMap.cs" />
-    <Compile Include="IPreviewMapHandler.cs" />
-    <Compile Include="IUserControl.cs" />
     <Compile Include="LayoutBitmap.cs" />
     <Compile Include="LayoutControl.cs">
       <SubType>UserControl</SubType>
@@ -179,7 +178,6 @@
     </Compile>
     <Compile Include="DrawLegendItemArgs.cs" />
     <Compile Include="ILegend.cs" />
-    <Compile Include="ILegendHandler.cs" />
     <Compile Include="Legend.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -188,7 +186,6 @@
     <Compile Include="ListBoxDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ChunkEventArgs.cs" />
     <Compile Include="IMap.cs" />
     <Compile Include="Map.cs">
       <SubType>UserControl</SubType>
@@ -214,7 +211,6 @@
     <Compile Include="IMapLayer.cs" />
     <Compile Include="IMapLayerCollection.cs" />
     <Compile Include="IMapLabelLayer.cs" />
-    <Compile Include="MapDrawTextArgs.cs" />
     <Compile Include="MapLabelLayer.cs" />
     <Compile Include="MapArgs.cs" />
     <Compile Include="MapDrawArgs.cs" />

@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial
 //
@@ -63,7 +56,7 @@ namespace DotSpatial.Data
 
             Filename = fileName;
             IndexMode = true;
-            Header = new ShapefileHeader(fileName);
+            Header = new ShapefileHeader(Filename);
 
             switch (Header.ShapeType)
             {
@@ -80,9 +73,9 @@ namespace DotSpatial.Data
 
             Extent = Header.ToExtent();
             Name = Path.GetFileNameWithoutExtension(fileName);
-            Attributes.Open(fileName);
+            Attributes.Open(Filename);
 
-            FillPoints(fileName, progressHandler);
+            FillPoints(Filename, progressHandler);
             ReadProjection();
         }
 
@@ -275,8 +268,8 @@ namespace DotSpatial.Data
                 Header.FileLength = Features.Count * wordSize + 50;
             }
 
-            Header.SaveAs(fileName);
-            var shpStream = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.None, 1000000);
+            Header.SaveAs(Filename);
+            var shpStream = new FileStream(Filename, FileMode.Append, FileAccess.Write, FileShare.None, 1000000);
             var shxStream = new FileStream(Header.ShxFilename, FileMode.Append, FileAccess.Write, FileShare.None, 1000000);
 
             // Special slightly faster writing for index mode

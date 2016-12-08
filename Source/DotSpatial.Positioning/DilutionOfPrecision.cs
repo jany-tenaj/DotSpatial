@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Positioning.dll
 // Description:  A library for managing GPS connections.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from http://gps3.codeplex.com/ version 3.0
 //
@@ -197,14 +190,6 @@ namespace DotSpatial.Positioning
                 return Distance.FromMeters(_currentAverageDevicePrecision.ToMeters().Value * _value).ToLocalUnitType();
             }
         }
-
-        ///// <summary>
-        ///// Obsolete.  See compiler warnings for upgrade help.
-        ///// </summary>
-        ///// <returns></returns>
-        //[Obsolete("Use the 'EstimatedPrecision' property to estimate precision as a measurable distance.")]
-        //public Distance GetEstimatedError()
-        //{ return EstimatedPrecision; }
 
         /// <summary>
         /// Returns a friendly name for the level of precision.

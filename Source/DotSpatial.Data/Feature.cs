@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -237,9 +230,9 @@ namespace DotSpatial.Data
                 }
             }
 
-            int myFID = Fid;
-            int oFID = other.Fid;
-            return myFID.CompareTo(oFID);
+            int myFid = Fid;
+            int oFid = other.Fid;
+            return myFid.CompareTo(oFid);
         }
 
         /// <summary>
@@ -358,6 +351,11 @@ namespace DotSpatial.Data
 
         #endregion
 
+        /// <summary>
+        /// Determines the FeatureType of this feature based on the given geometry.
+        /// </summary>
+        /// <param name="geometry">Geometry that is used to determine the FeatureType.</param>
+        /// <returns>Unspecified if the geometry was null otherwise the FeatureType that corresponds to the geometries OgcGeometryType.</returns>
         private FeatureType FeatureTypeFromGeometryType(IGeometry geometry)
         {
             FeatureType featureType = FeatureType.Unspecified;
@@ -472,15 +470,19 @@ namespace DotSpatial.Data
         {
             Feature clone = (Feature)MemberwiseClone();
             clone.Geometry = Geometry.Copy();
-            DataTable table = ParentFeatureSet.DataTable;
-            clone._dataRow = table.NewRow();
-            if (DataRow != null)
+            if (ParentFeatureSet != null && ParentFeatureSet.DataTable != null)
             {
-                for (int i = 0; i < ParentFeatureSet.DataTable.Columns.Count; i++)
+                DataTable table = ParentFeatureSet.DataTable;
+                clone._dataRow = table.NewRow();
+                if (DataRow != null)
                 {
-                    clone._dataRow[i] = DataRow[i];
+                    for (int i = 0; i < ParentFeatureSet.DataTable.Columns.Count; i++)
+                    {
+                        clone._dataRow[i] = DataRow[i];
+                    }
                 }
             }
+
             return clone;
         }
 
@@ -547,12 +549,6 @@ namespace DotSpatial.Data
         /// </summary>
         public CacheTypes NumPartsSource { get; set; }
 
-        /// <summary>
-        /// This specifies the offset, if any in the data file
-        /// </summary>
-        [Obsolete("This property no longer used.")] // Marked in 1.7
-        public long Offset { get; protected set; }
-
         #region IFeature Members
 
         /// <summary>
@@ -587,7 +583,6 @@ namespace DotSpatial.Data
             }
         }
 
-
         /// <summary>
         /// Gets the datarow containing all the attributes related to this geometry.
         /// This will query the parent feature layer's data Table by FID and then
@@ -607,10 +602,8 @@ namespace DotSpatial.Data
             }
         }
 
-
-
         /// <summary>
-        /// Returns either Point, Polygon or Line
+        /// Returns either Point, Polygon or Line.
         /// </summary>
         public FeatureType FeatureType
         {

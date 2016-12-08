@@ -86,7 +86,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotSpatial.GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotSpatial.GeoAPI.1.7.4.1\lib\net40-client\DotSpatial.GeoAPI.dll</HintPath>
+      <HintPath>..\packages\DotSpatial.GeoAPI.1.7.4.2\lib\net40-client\DotSpatial.GeoAPI.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="DotSpatial.NetTopologySuite, Version=1.14.2.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
@@ -103,10 +103,12 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyInfoShared.cs">
+      <Link>Properties\AssemblyInfoShared.cs</Link>
+    </Compile>
     <Compile Include="Argb.cs" />
     <Compile Include="BinaryReaderWriterExtensions.cs" />
     <Compile Include="DbaseLocaleRegistry.cs" />
@@ -131,9 +133,7 @@
     <Compile Include="IExtentZ.cs" />
     <Compile Include="IFeatureRow.cs" />
     <Compile Include="IGetBitmap.cs" />
-    <Compile Include="ImageDataEventArgs.cs" />
     <Compile Include="Endian.cs" />
-    <Compile Include="IFeatureSource.cs" />
     <Compile Include="ImageBandType.cs" />
     <Compile Include="InRamImage.cs" />
     <Compile Include="IProj.cs" />
@@ -146,6 +146,7 @@
     <Compile Include="MiscUtil\ExpressionUtil.cs" />
     <Compile Include="MiscUtil\NullOp.cs" />
     <Compile Include="MiscUtil\Operator.cs" />
+    <Compile Include="FilePathUtils.cs" />
     <Compile Include="PointShape.cs" />
     <Compile Include="PointShapefileFeatureSource.cs" />
     <Compile Include="PointShapefileShapeSource.cs" />
@@ -154,24 +155,21 @@
     <Compile Include="DataManager.cs" />
     <Compile Include="DataProviders.cs" />
     <Compile Include="Extent.cs" />
-    <Compile Include="FileMode.cs" />
     <Compile Include="PolygonShapefileFeatureSource.cs" />
     <Compile Include="PolygonShapefileShapeSource.cs" />
     <Compile Include="ProgressMeter.cs" />
-    <Compile Include="ProjExt.cs" />
+    <Compile Include="IProjExtensions.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="RasterBoundDataSet.cs" />
-    <Compile Include="RasterEventArgs.cs" />
     <Compile Include="RowEditEvent.cs" />
     <Compile Include="ShapeFactory.cs" />
     <Compile Include="ShapefileFeatureSource.cs" />
     <Compile Include="ShapefileFeatureSourceQuadtree.cs" />
     <Compile Include="ShapefileIndexFile.cs" />
-    <Compile Include="ShapefileReader.cs" />
     <Compile Include="ShapefileShapeSource.cs" />
     <Compile Include="ShapeReader.cs" />
     <Compile Include="ShapeRelateType.cs" />
@@ -179,7 +177,6 @@
     <Compile Include="BufferedBinaryReader.cs" />
     <Compile Include="BufferedBinaryWriter.cs" />
     <Compile Include="IDataManager.cs" />
-    <Compile Include="ILog.cs" />
     <Compile Include="DataStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -200,7 +197,6 @@
     <Compile Include="IImageCoverage.cs" />
     <Compile Include="IImageData.cs" />
     <Compile Include="IImageSet.cs" />
-    <Compile Include="IImageSource.cs" />
     <Compile Include="ImageCoverage.cs" />
     <Compile Include="ImageData.cs" />
     <Compile Include="ITiledImage.cs" />
@@ -214,7 +210,6 @@
     <Compile Include="PngHeader.cs" />
     <Compile Include="PngInsuficientLengthException.cs" />
     <Compile Include="PngInvalidSignatureException.cs" />
-    <Compile Include="PyramidByteMismatchException.cs" />
     <Compile Include="PyramidException.cs" />
     <Compile Include="PyramidHeader.cs" />
     <Compile Include="PyramidImage.cs" />
@@ -224,33 +219,19 @@
     <Compile Include="TileCollection.cs" />
     <Compile Include="TiledImage.cs" />
     <Compile Include="WorldFile.cs" />
-    <Compile Include="HfaCoordinate.cs" />
-    <Compile Include="HfaDatum.cs" />
-    <Compile Include="HfaDatumType.cs" />
-    <Compile Include="HfaEPRJ.cs" />
     <Compile Include="HfaEPT.cs" />
     <Compile Include="HfaExt.cs" />
     <Compile Include="Hfa.cs" />
     <Compile Include="HfaAccess.cs" />
-    <Compile Include="HfaCompress.cs" />
     <Compile Include="HfaDictionary.cs" />
     <Compile Include="HfaEntry.cs" />
     <Compile Include="HfaEnumerationNotFoundException.cs" />
     <Compile Include="HfaField.cs" />
     <Compile Include="HfaInfo.cs" />
     <Compile Include="HfaInvalidCountException.cs" />
-    <Compile Include="HfaNotCompressedException.cs" />
     <Compile Include="HfaPointerInsertNotSupportedException.cs" />
     <Compile Include="HfaType.cs" />
     <Compile Include="HfaTypeException.cs" />
-    <Compile Include="HfaMapInfo.cs" />
-    <Compile Include="HfaNAD.cs" />
-    <Compile Include="HfaProParameters.cs" />
-    <Compile Include="HfaProType.cs" />
-    <Compile Include="HfaSize.cs" />
-    <Compile Include="HfaSpheroid.cs" />
-    <Compile Include="IDataLayer.cs" />
-    <Compile Include="PluginInfo.cs" />
     <Compile Include="AffineTransform.cs" />
     <Compile Include="BinaryRasterProvider.cs" />
     <Compile Include="RasterBoundsExt.cs" />
@@ -259,7 +240,6 @@
     <Compile Include="RasterT.cs" />
     <Compile Include="ValueGrid.cs" />
     <Compile Include="BinaryRaster.cs" />
-    <Compile Include="RasterEnumerator.cs" />
     <Compile Include="IRaster.cs" />
     <Compile Include="IRasterBounds.cs" />
     <Compile Include="IValueGrid.cs" />
@@ -270,10 +250,7 @@
     <Compile Include="RasterFileType.cs" />
     <Compile Include="RCIndex.cs" />
     <Compile Include="Smoother.cs" />
-    <Compile Include="ScaleBarInfo.cs" />
-    <Compile Include="ScaleBarPosition.cs" />
     <Compile Include="SpaceTimeSupport.cs" />
-    <Compile Include="StatusBarInfo.cs" />
     <Compile Include="StreamExt.cs" />
     <Compile Include="ByteBlock.cs" />
     <Compile Include="DataSet.cs" />
@@ -332,24 +309,18 @@
     <Compile Include="EventList.cs" />
     <Compile Include="Global.cs" />
     <Compile Include="ICancelProgressHandler.cs" />
-    <Compile Include="ISuspendEvents.cs" />
     <Compile Include="IChangeEventList.cs" />
     <Compile Include="IChangeItem.cs" />
-    <Compile Include="IEventDictionary.cs" />
     <Compile Include="IEventList.cs" />
-    <Compile Include="IListEM.cs" />
+    <Compile Include="IListExtensions.cs" />
     <Compile Include="INamedList.cs" />
     <Compile Include="IndividualEventArgs.cs" />
     <Compile Include="IndividualCancelEventArgs.cs" />
-    <Compile Include="IndividualDictionaryEventArgs.cs" />
-    <Compile Include="IndividualDictionaryCancelEventArgs.cs" />
     <Compile Include="IndividualIndex.cs" />
     <Compile Include="IndividualIndexCancel.cs" />
-    <Compile Include="IOrderedDictionary.cs" />
     <Compile Include="IParentItem.cs" />
     <Compile Include="IProgressHandler.cs" />
     <Compile Include="IReadOnlyList.cs" />
-    <Compile Include="ITreeList.cs" />
     <Compile Include="MessageCancelEventArgs.cs" />
     <Compile Include="NamedList.cs" />
     <Compile Include="NonNumericException.cs" />

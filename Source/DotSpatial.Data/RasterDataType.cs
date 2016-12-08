@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -19,14 +12,11 @@
 //
 // ********************************************************************************************************
 
-using System;
-
 namespace DotSpatial.Data
 {
     /// <summary>
     /// Data types specific to grids
     /// </summary>
-    // todo: Not sure that we need UNKNOWN and CUSTOM cases. For now i've marked them as Deprecated.
     public enum RasterDataType
     {
         /// <summary>
@@ -55,21 +45,9 @@ namespace DotSpatial.Data
         DOUBLE = 3,
 
         /// <summary>
-        /// Unknown
-        /// </summary>
-        [Obsolete("Use INVALID case instead")] // Marked in 1.7
-        UNKNOWN = 4,
-
-        /// <summary>
         /// Byte
         /// </summary>
         BYTE = 5,
-
-        /// <summary>
-        /// Specified as the CustomType string
-        /// </summary>
-        [Obsolete("Do not use it. There is no support for this case anywhere in code.")] // Marked in 1.7
-        CUSTOM = 6,
 
         /// <summary>
         /// Signed 64 Bit Integers

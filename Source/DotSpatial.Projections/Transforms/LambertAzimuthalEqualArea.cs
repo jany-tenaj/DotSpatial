@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Projection
 // Description:  The basic module for MapWindow version 6.0
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The original content was ported from the C language from the 4.6 version of Proj4 libraries.
 // Frank Warmerdam has released the full content of that version under the MIT license which is
@@ -22,6 +15,7 @@
 //        Name         |    Date    |        Comment
 // --------------------|------------|------------------------------------------------------------
 // Ted Dunsford        |   5/3/2010 |  Updated project to DotSpatial.Projection and license to LGPL
+// Christoph Perger    |  22/6/2016 |  Fixed some issues with projection from LAEA to WGS84
 // ********************************************************************************************************
 
 using System;
@@ -189,7 +183,7 @@ namespace DotSpatial.Projections.Transforms
                 double cy = xy[y];
                 if (_mode == Modes.Equitorial || _mode == Modes.Oblique)
                 {
-                    double rho = Proj.Hypot(cx /= _dd, cy * _dd);
+                    double rho = Proj.Hypot(cx /= _dd, cy *= _dd);
                     if (rho < EPS10)
                     {
                         lp[lam] = 0;
@@ -201,7 +195,7 @@ namespace DotSpatial.Projections.Transforms
                     cx *= (sCe = Math.Sin(sCe));
                     if (_mode == Modes.Oblique)
                     {
-                        ab = cCe * _sinb1 + y * sCe * _cosb1 / rho;
+                        ab = cCe * _sinb1 + cy * sCe * _cosb1 / rho;
                         //q = _qp*(ab);
                         cy = rho * _cosb1 * cCe - cy * _sinb1 * sCe;
                     }
@@ -325,10 +319,10 @@ namespace DotSpatial.Projections.Transforms
                 case Modes.Oblique:
                     _rq = Math.Sqrt(.5 * _qp);
                     double sinphi = Math.Sin(Phi0);
-                    _sinb1 = Proj.Qsfn(sinphi, E, OneEs);
+                    _sinb1 = Proj.Qsfn(sinphi, E, OneEs)/_qp;
                     _cosb1 = Math.Sqrt(1 - _sinb1 * _sinb1);
                     _dd = Math.Cos(Phi0) / (Math.Sqrt(1 - Es * sinphi * sinphi) * _rq * _cosb1);
-                    _ymf = _xmf = _rq / _dd;
+                    _ymf = (_xmf = _rq) / _dd;
                     _xmf *= _dd;
                     break;
             }

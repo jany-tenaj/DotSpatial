@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -20,7 +13,6 @@
 
 using System.Collections.Generic;
 using System.Drawing;
-using DotSpatial.Serialization;
 
 namespace DotSpatial.Data
 {
@@ -29,12 +21,6 @@ namespace DotSpatial.Data
     /// </summary>
     public class ImageData : RasterBoundDataSet, IImageData
     {
-        #region Private Variables
-
-        private int _bytesPerPixel;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -66,14 +52,6 @@ namespace DotSpatial.Data
         public virtual Bitmap GetBitmap()
         {
             return null;
-        }
-
-        /// <summary>
-        /// Sets the bitmap being used for this dataset
-        /// </summary>
-        /// <param name="image"></param>
-        public virtual void SetBitmap(Bitmap image)
-        {
         }
 
         /// <summary>
@@ -175,23 +153,7 @@ namespace DotSpatial.Data
         /// Gets or sets an integer indicating how many bytes exist for each pixel.
         /// Eg. 32 ARGB = 4, 24 RGB = 3, 16 bit GrayScale = 2
         /// </summary>
-        public int BytesPerPixel
-        {
-            get
-            {
-                return _bytesPerPixel;
-            }
-            set
-            {
-                _bytesPerPixel = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the fileName.
-        /// </summary>
-        [Serialize("Filename", ConstructorArgumentIndex = 0)]
-        public string Filename { get; set; }
+        public int BytesPerPixel { get; set; }
 
         /// <summary>
         /// Creates a color structure from the byte values in the values array that correspond to the

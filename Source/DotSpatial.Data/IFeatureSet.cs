@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial.dll for the DotSpatial project
 //
@@ -58,11 +51,18 @@ namespace DotSpatial.Data
         #region Methods
 
         /// <summary>
-        /// Gets the list of string names available as columns from the specified excel file.
+        /// For attributes that are small enough to be loaded into a data table, this
+        /// will join attributes from a foreign table.  This method
+        /// won't create new rows in this table, so only matching members are brought in,
+        /// but no rows are removed either, so not all rows will receive data.
         /// </summary>
-        /// <param name="xlsFilePath"></param>
-        /// <returns></returns>
-        List<string> GetColumnNames(string xlsFilePath);
+        /// <param name="table">Foreign data table.</param>
+        /// <param name="localJoinField">The field name to join on in this table.</param>
+        /// <param name="dataTableJoinField">The field in the foreign table.</param>
+        /// <returns>
+        /// A modified featureset with the changes.
+        /// </returns>
+        IFeatureSet Join(DataTable table, string localJoinField, string dataTableJoinField);
 
         /// <summary>
         /// For attributes that are small enough to be loaded into a data table, this
@@ -73,8 +73,10 @@ namespace DotSpatial.Data
         /// <param name="xlsFilePath">The complete path of the file to join</param>
         /// <param name="localJoinField">The field name to join on in this table</param>
         /// <param name="xlsJoinField">The field in the foreign table.</param>
-        IFeatureSet Join(string xlsFilePath, string localJoinField,
-                         string xlsJoinField);
+        /// <returns>
+        /// A modified featureset with the changes.
+        /// </returns>
+        IFeatureSet Join(string xlsFilePath, string localJoinField, string xlsJoinField);
 
         /// <summary>
         /// If this featureset is in index mode, this will append the vertices and shapeindex of the shape.
@@ -102,14 +104,13 @@ namespace DotSpatial.Data
         IFeature GetFeature(int index);
 
         /// <summary>
-        /// Gets a shape at the specified shape index.  If the featureset is in
-        /// indexmode, this returns a copy of the shape.  If not, it will create
-        /// a new shape based on the specified feature.
+        /// Gets a shape at the specified shape index. If the featureset is in IndexMode, this returns a copy of the shape.
+        /// If not, it will create a new shape based on the specified feature.
         /// </summary>
         /// <param name="index">The zero based integer index of the shape.</param>
         /// <param name="getAttributes">If getAttributes is true, then this also try to get attributes for that shape.
-        /// If attributes are loaded, then it will use the existing datarow.  Otherwise, it will read the attributes
-        /// from the file.  (This second option is not recommended for large repeats.  In such a case, the attributes
+        /// If attributes are loaded, then it will use the existing datarow. Otherwise, it will read the attributes
+        /// from the file. (This second option is not recommended for large repeats. In such a case, the attributes
         /// can be set manually from a larger bulk query of the data source.)</param>
         /// <returns>The Shape object</returns>
         Shape GetShape(int index, bool getAttributes);
@@ -136,27 +137,45 @@ namespace DotSpatial.Data
         void AddFid();
 
         /// <summary>
-        /// Copies all the features from the specified featureset.
+        /// Copies all the features to a new featureset.
         /// </summary>
-        /// <param name="source">The source IFeatureSet to copy features from.</param>
-        /// <param name="copyAttributes">Boolean, true if the attributes should be copied as well.  If this is true,
+        /// <param name="withAttributes">Indicates whether the features attributes should be copied. If this is true,
         /// and the attributes are not loaded, a FillAttributes call will be made.</param>
-        void CopyFeatures(IFeatureSet source, bool copyAttributes);
+        IFeatureSet CopyFeatures(bool withAttributes);
 
         /// <summary>
-        /// Retrieves a subset using exclusively the features matching the specified values.
+        /// Retrieves a subset using exclusively the features matching the specified values. Attributes are always copied.
         /// </summary>
         /// <param name="indices">An integer list of indices to copy into the new FeatureSet</param>
         /// <returns>A FeatureSet with the new items.</returns>
         IFeatureSet CopySubset(List<int> indices);
 
         /// <summary>
+        /// Retrieves a subset using exclusively the features matching the specified values. Attributes are only copied if withAttributes is true.
+        /// </summary>
+        /// <param name="indices">An integer list of indices to copy into the new FeatureSet.</param>
+        /// <param name="withAttributes">Indicates whether the features attributes should be copied.</param>
+        /// <returns>A FeatureSet with the new items.</returns>
+        IFeatureSet CopySubset(List<int> indices, bool withAttributes);
+
+        /// <summary>
+        /// Copies the subset of specified features to create a new featureset that is restricted to
+        /// just the members specified. Attributes are always copied.
+        /// </summary>
+        /// <param name="filterExpression">The string expression to that specifies the features that should be copied. 
+        /// An empty expression copies all features.</param>
+        /// <returns>A FeatureSet that has members that only match the specified members.</returns>
+        IFeatureSet CopySubset(string filterExpression);
+
+        /// <summary>
         /// Copies the subset of specified features to create a new featureset that is restricted to
         /// just the members specified.
         /// </summary>
-        /// <param name="filterExpression">The string expression to test.</param>
+        /// <param name="filterExpression">The string expression to that specifies the features that should be copied. 
+        /// An empty expression copies all features.</param>
+        /// <param name="withAttributes">Indicates whether the features attributes should be copied.</param>
         /// <returns>A FeatureSet that has members that only match the specified members.</returns>
-        IFeatureSet CopySubset(string filterExpression);
+        IFeatureSet CopySubset(string filterExpression, bool withAttributes);
 
         /// <summary>
         /// Copies only the names and types of the attribute fields, without copying any of the attributes or features.
@@ -182,14 +201,6 @@ namespace DotSpatial.Data
         /// This may also be a cue to read values from a database.
         /// </summary>
         void FillAttributes(IProgressHandler progressHandler);
-
-        /// <summary>
-        /// Obtains the list of feature indices that match the specified filter expression.
-        /// </summary>
-        /// <param name="filterExpression">The filter expression to find features for.</param>
-        /// <returns>The list of integers that are the FIDs of the specified values.</returns>
-        [Obsolete("Use SelectIndexByAttribute(filterExpression) instead.")] // Marked obsolete in 1.7.
-        List<int> Find(string filterExpression);
 
         /// <summary>
         /// This forces the vertex initialization so that Vertices, ShapeIndices, and the
@@ -232,132 +243,73 @@ namespace DotSpatial.Data
         /// <summary>
         /// Gets whether or not the attributes have all been loaded into the data table.
         /// </summary>
-        bool AttributesPopulated
-        {
-            get;
-            set;
-        }
+        bool AttributesPopulated { get; set; }
 
         /// <summary>
         /// Gets or sets the coordinate type across the entire featureset.
         /// </summary>
-        CoordinateType CoordinateType
-        {
-            get;
-            set;
-        }
+        CoordinateType CoordinateType { get; set; }
 
         /// <summary>
         /// Gets the DataTable associated with this specific feature.
         /// </summary>
-        DataTable DataTable
-        {
-            get;
-            set;
-        }
+        DataTable DataTable { get; set; }
 
         /// <summary>
         /// Gets the list of all the features that are included in this layer.
         /// </summary>
-        IFeatureList Features
-        {
-            get;
-            set;
-        }
+        IFeatureList Features { get; set; }
 
         /// <summary>
         /// This is an optional GeometryFactory that can be set to control how the geometries on features are
         /// created.  if this is not specified, the default from DotSptaial.Topology is used.
         /// </summary>
-        IGeometryFactory FeatureGeometryFactory
-        {
-            get;
-            set;
-        }
+        IGeometryFactory FeatureGeometryFactory { get; set; }
 
         /// <summary>
         /// Gets the feature lookup Table itself.
         /// </summary>
-        Dictionary<DataRow, IFeature> FeatureLookup
-        {
-            get;
-        }
+        Dictionary<DataRow, IFeature> FeatureLookup { get; }
 
         /// <summary>
         /// Gets an enumeration indicating the type of feature represented in this dataset, if any.
         /// </summary>
-        FeatureType FeatureType
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// Gets the string fileName for this feature layer, if any
-        /// </summary>
-        string Filename
-        {
-            get;
-            set;
-        }
+        FeatureType FeatureType { get; set; }
 
         /// <summary>
         /// These specifically allow the user to make sense of the Vertices array.  These are
         /// fast acting sealed classes and are not meant to be overridden or support clever
         /// new implementations.
         /// </summary>
-        List<ShapeRange> ShapeIndices
-        {
-            get;
-            set;
-        }
+        List<ShapeRange> ShapeIndices { get; set; }
 
         /// <summary>
         /// If this is true, then the ShapeIndices and Vertex values are used,
         /// and features are created on demand.  Otherwise the list of Features
         /// is used directly.
         /// </summary>
-        bool IndexMode
-        {
-            get;
-            set;
-        }
+        bool IndexMode { get; set; }
 
         /// <summary>
         /// Gets an array of Vertex structures with X and Y coordinates
         /// </summary>
-        double[] Vertex
-        {
-            get;
-            set;
-        }
+        double[] Vertex { get; set; }
 
         /// <summary>
         /// Z coordinates
         /// </summary>
-        double[] Z
-        {
-            get;
-            set;
-        }
+        double[] Z { get; set; }
 
         /// <summary>
         /// M coordinates
         /// </summary>
-        double[] M
-        {
-            get;
-            set;
-        }
+        double[] M { get; set; }
 
         /// <summary>
         /// Gets a boolean that indicates whether or not the InvalidateVertices has been called
         /// more recently than the cached vertex array has been built.
         /// </summary>
-        bool VerticesAreValid
-        {
-            get;
-        }
+        bool VerticesAreValid { get; }
 
         /// <summary>
         /// Skips the features themselves and uses the shapeindicies instead.

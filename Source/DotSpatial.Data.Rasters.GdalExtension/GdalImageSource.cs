@@ -24,27 +24,29 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 using OSGeo.GDAL;
 
 namespace DotSpatial.Data.Rasters.GdalExtension
 {
     /// <summary>
-    /// gdalImage
+    /// GDAL Image Source
     /// </summary>
-    public class GdalImageSource : IImageSource
+    public class GdalImageSource
     {
         #region Private Variables
 
-        Band _alpha;
-        Band _blue;
+        private Band _alpha;
+        private Band _blue;
+        private Band _green;
+        private Band _red;
 
         private RasterBounds _bounds;
-        Dataset _dataset;
+        private Dataset _dataset;
         private string _fileName;
-        Band _green;
+        
         private int _numOverviews;
-        Band _red;
 
         #endregion
 
@@ -86,10 +88,7 @@ namespace DotSpatial.Data.Rasters.GdalExtension
         /// </summary>
         public int NumRows
         {
-            get
-            {
-                return _bounds != null ? _bounds.NumRows : 0;
-            }
+            get { return _bounds != null ? _bounds.NumRows : 0; }
         }
 
         /// <summary>
@@ -97,10 +96,7 @@ namespace DotSpatial.Data.Rasters.GdalExtension
         /// </summary>
         public int NumColumns
         {
-            get
-            {
-                return _bounds != null ? _bounds.NumColumns : 0;
-            }
+            get { return _bounds != null ? _bounds.NumColumns : 0; }
         }
 
         #endregion
@@ -134,21 +130,20 @@ namespace DotSpatial.Data.Rasters.GdalExtension
             EnsureDatasetOpen();
             _red = _dataset.GetRasterBand(1);
             byte[] result = null;
-            if (_red.GetRasterColorInterpretation() == ColorInterp.GCI_PaletteIndex)
+            switch (_red.GetRasterColorInterpretation())
             {
-                result = ReadPaletteBuffered(startRow, startColumn, numRows, numColumns, overview);
-            }
-            if (_red.GetRasterColorInterpretation() == ColorInterp.GCI_GrayIndex)
-            {
-                result = ReadGrayIndex(startRow, startColumn, numRows, numColumns, overview);
-            }
-            if (_red.GetRasterColorInterpretation() == ColorInterp.GCI_RedBand)
-            {
-                result = ReadRgb(startRow, startColumn, numRows, numColumns, overview);
-            }
-            if (_red.GetRasterColorInterpretation() == ColorInterp.GCI_AlphaBand)
-            {
-                result = ReadArgb(startRow, startColumn, numRows, numColumns, overview);
+                case ColorInterp.GCI_PaletteIndex:
+                    result = ReadPaletteBuffered(startRow, startColumn, numRows, numColumns, overview);
+                    break;
+                case ColorInterp.GCI_GrayIndex:
+                    result = ReadGrayIndex(startRow, startColumn, numRows, numColumns, overview);
+                    break;
+                case ColorInterp.GCI_RedBand:
+                    result = ReadRgb(startRow, startColumn, numRows, numColumns, overview);
+                    break;
+                case ColorInterp.GCI_AlphaBand:
+                    result = ReadArgb(startRow, startColumn, numRows, numColumns, overview);
+                    break;
             }
             return result;
         }
@@ -183,6 +178,7 @@ namespace DotSpatial.Data.Rasters.GdalExtension
 
             double[] test = new double[6];
             _dataset.GetGeoTransform(test);
+            test = (new AffineTransform(test)).TransfromToCorner(0.5, 0.5);//shift origin by half a cell
             Bounds = new RasterBounds(_dataset.RasterYSize, _dataset.RasterXSize, test);
             _red = _dataset.GetRasterBand(1);
             _numOverviews = _red.GetOverviewCount();
@@ -241,16 +237,16 @@ namespace DotSpatial.Data.Rasters.GdalExtension
 
         #region Properties
 
-        #endregion
-
         /// <summary>
-        /// Gets or sets the fileName of the image source
+        /// Gets or sets the file name of the image source. If a relative path gets assigned it is changed to the absolute path including the file extension.
         /// </summary>
         public string Filename
         {
             get { return _fileName; }
-            set { _fileName = value; }
+            set { _fileName = Path.GetFullPath(value); }
         }
+
+        #endregion
 
         /// <summary>
         /// Returns ARGB 32 bpp regardless of the fact that the original is palette buffered.

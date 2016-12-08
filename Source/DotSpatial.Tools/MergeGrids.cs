@@ -1,7 +1,7 @@
 ﻿// *******************************************************************************************************
 // Product: DotSpatial.Tools.MergeGrids.cs
 // Description:  Tool that merges two raster layers.
-// Copyright & License: See www.DotSpatial.org.
+
 // Contributor(s): Open source contributors may list themselves and their modifications here.
 // Contribution of code constitutes transferral of copyright from authors to DotSpatial copyright holders. 
 //--------------------------------------------------------------------------------------------------------
@@ -108,8 +108,7 @@ namespace DotSpatial.Tools
         /// <param name="output">The output raster.</param>
         /// <param name="cancelProgressHandler">The progress handler.</param>
         /// <returns>Boolean, true if the merge is successful.</returns>
-        public bool Execute(
-            IRaster input1, IRaster input2, IRaster output, ICancelProgressHandler cancelProgressHandler)
+        public bool Execute(IRaster input1, IRaster input2, IRaster output, ICancelProgressHandler cancelProgressHandler)
         {
             // Validates the input and output data
             if (input1 == null || input2 == null || output == null)
@@ -217,8 +216,9 @@ namespace DotSpatial.Tools
                                      HelpText = TextStrings.InputSecondRasterforMerging
                                  };
 
-            _outputParam = new Parameter[1];
+            _outputParam = new Parameter[2];
             _outputParam[0] = new RasterParam(TextStrings.OutputRaster) { HelpText = TextStrings.ResultRasterDirectory };
+            _outputParam[1] = new BooleanParam(TextStrings.OutputParameter_AddToMap, TextStrings.OutputParameter_AddToMap_CheckboxText, true);
         }
 
         #endregion

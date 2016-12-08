@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial
 //
@@ -35,6 +28,7 @@ namespace DotSpatial.Data
     /// </summary>
     public abstract class ShapefileShapeSource : IShapeSource
     {
+        private string _filename;
         private readonly ISpatialIndex<int> _spatialIndex;
 
         /// <summary>
@@ -67,7 +61,11 @@ namespace DotSpatial.Data
         }
 
         /// <inheritdocs/>
-        public string Filename { get; set; }
+        public string Filename
+        {
+            get { return _filename; }
+            set { _filename = Path.GetFullPath(value); }
+        }
 
         /// <summary>
         /// Get the shape type (without M or Z) supported by this shape source
@@ -110,7 +108,7 @@ namespace DotSpatial.Data
                 throw new NullReferenceException(Filename);
             }
 
-            if (File.Exists(Filename) == false)
+            if (!File.Exists(Filename))
             {
                 throw new FileNotFoundException(Filename);
             }

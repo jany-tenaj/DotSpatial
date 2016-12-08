@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Controls.dll
 // Description:  The Windows Forms user interface controls like the map, legend, toolbox, ribbon and others.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -65,14 +58,19 @@ namespace DotSpatial.Controls
 
         private AggregateCatalog _catalog;
         private IContainer _components;
-        private string message = "";
-        private ISplashScreenManager splashScreen;
+        private string _message = "";
+        private ISplashScreenManager _splashScreen;
         private IHeaderControl _headerControl;
         private IMap _map;
 
         #endregion
 
         #region Constructors and Destructors
+
+        static AppManager()
+        {
+            BaseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AppManager"/> class.
@@ -125,6 +123,11 @@ namespace DotSpatial.Controls
         #region Public Properties
 
         /// <summary>
+        /// Used in conjuction with <see cref="UseBaseDirectoryForExtensionsDirectory"/>. Default is AppDomain.CurrentDomain.BaseDirectory.
+        /// </summary>
+        public static string BaseDirectory { get; set; }
+
+        /// <summary>
         /// A known directory from where extensions will be loaded, in addition to the configurable Directories list.
         /// Assemblies placed directly in this directory will not be loaded, but rather those nested inside of a folder
         /// more than one level deep.
@@ -135,12 +138,15 @@ namespace DotSpatial.Controls
             {
                 string absolutePathToExtensions;
                 if (UseBaseDirectoryForExtensionsDirectory)
-                    absolutePathToExtensions = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ExtensionsDirectory);
+                {
+                    absolutePathToExtensions = Path.Combine(BaseDirectory, ExtensionsDirectory);
+                }
                 else
                 {
                     // by placing data in the AppData location, ClickOnce appications won't be subject to limits on size.
                     Assembly asm = Assembly.GetEntryAssembly();
-                    absolutePathToExtensions = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), asm.ManifestModule.Name, ExtensionsDirectory);
+                    absolutePathToExtensions = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                            asm.ManifestModule.Name, ExtensionsDirectory);
                 }
                 return absolutePathToExtensions;
             }
@@ -251,26 +257,16 @@ namespace DotSpatial.Controls
         /// <summary>
         /// Gets or sets the method for enabling extension Apps.
         /// </summary>
-        [Obsolete("Use ShowExtensionsDialogMode instead")] // Marked obsolete in 1.7
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ShowExtensionsDialog ShowExtensionsDialog { get; set; }
-
-        /// <summary>
-        /// Gets or sets the method for enabling extension Apps.
-        /// </summary>
         [Description("Gets or sets the method for enabling extension Apps.")]
-        public ShowExtensionsDialogMode ShowExtensionsDialogMode
-        {
-            get { return (ShowExtensionsDialogMode) ((int) ShowExtensionsDialog); }
-            set { ShowExtensionsDialog = (ShowExtensionsDialog) ((int) value); }
-        }
+        public ShowExtensionsDialogMode ShowExtensionsDialogMode { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether extensions should be placed in AppDomain.CurrentDomain.BaseDirectory.
+        /// Gets or sets a value indicating whether extensions should be placed in <see cref="BaseDirectory"/>
         /// </summary>
         /// <value>
-        /// <c>true</c> if extensions should be placed in AppDomain.CurrentDomain.BaseDirectory; otherwise, extensions will be placed in a user profile folder based on the entry assembly name.
+        /// <c>true</c> if extensions should be placed in <see cref="BaseDirectory"/>; otherwise, extensions will be placed in a user profile folder based on the entry assembly name.
         /// This must be set before calling LoadExtensions();
         /// </value>
         public static bool UseBaseDirectoryForExtensionsDirectory { get; set; }
@@ -394,7 +390,7 @@ namespace DotSpatial.Controls
             }
 
             PackageManager.RemovePendingPackagesAndExtensions();
-            splashScreen = SplashScreenHelper.GetSplashScreenManager();
+            _splashScreen = SplashScreenHelper.GetSplashScreenManager();
 
             Thread updateThread = new Thread(AppLoadExtensions);
             updateThread.Start();
@@ -402,17 +398,17 @@ namespace DotSpatial.Controls
             //Update splash screen's progress bar while thread is active.
             while (updateThread.IsAlive)
             {
-                UpdateSplashScreen(message);
+                UpdateSplashScreen(_message);
             }
             updateThread.Join();
 
             ActivateAllExtensions();
             OnExtensionsActivated(EventArgs.Empty);
 
-            if (splashScreen != null)
+            if (_splashScreen != null)
             {
-                splashScreen.Deactivate();
-                splashScreen = null;
+                _splashScreen.Deactivate();
+                _splashScreen = null;
             }
 
             // Set the DefaultDataManager progress handler.
@@ -453,7 +449,7 @@ namespace DotSpatial.Controls
         /// <param name="msg">The message.</param>
         public void UpdateProgress(string msg)
         {
-            if (splashScreen != null)
+            if (_splashScreen != null)
                 UpdateSplashScreen(msg);
             else if (ProgressHandler != null)
                 ProgressHandler.Progress(String.Empty, 0, msg);
@@ -505,7 +501,7 @@ namespace DotSpatial.Controls
         /// </summary>
         private void AppLoadExtensions()
         {
-            message = "Discovering Extensions...";
+            _message = "Discovering Extensions...";
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             _catalog = GetCatalog();
 
@@ -521,7 +517,7 @@ namespace DotSpatial.Controls
                 throw;
             }
 
-            message = "Loading Extensions...";
+            _message = "Loading Extensions...";
             OnExtensionsActivating(EventArgs.Empty);
         }
 
@@ -564,7 +560,7 @@ namespace DotSpatial.Controls
             //check the installation directory
             foreach (string directory in Directories)
             {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, directory);
+                string path = Path.Combine(BaseDirectory, directory);
 
                 if (Directory.Exists(path))
                 {
@@ -617,7 +613,7 @@ namespace DotSpatial.Controls
                 // Add files in the current directory as well.
                 Trace.WriteLine("Cataloging: " + dir);
                 // UpdateSplashScreen("Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit));
-                message = "Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit);
+                _message = "Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit);
                 if (!DirectoryCatalogExists(catalog, dir))
                     TryLoadingCatalog(catalog, new DirectoryCatalog(dir));
             }
@@ -635,7 +631,7 @@ namespace DotSpatial.Controls
             Directories.Add(Mono.Mono.IsRunningOnMono() ? "Mono Extensions" : "Windows Extensions");
             foreach (string directory in Directories.Union(new[] { "Data Extensions", "Tools" }))
             {
-                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, directory);
+                string path = Path.Combine(BaseDirectory, directory);
 
                 if (Directory.Exists(path))
                 {
@@ -712,7 +708,7 @@ namespace DotSpatial.Controls
             {
                 Trace.WriteLine("Cataloging: " + dir);
                 //UpdateSplashScreen("Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit));
-                message = "Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit);
+                _message = "Cataloging: " + PrefixWithEllipsis(dir, SplashDirectoryMessageLimit);
                 // todo: consider using a file system watcher if it would provider better performance.
                 if (!DirectoryCatalogExists(catalog, dir))
                     TryLoadingCatalog(catalog, new DirectoryCatalog(dir));
@@ -772,8 +768,8 @@ namespace DotSpatial.Controls
 
         public void UpdateSplashScreen(string text)
         {
-            if (splashScreen != null && text != null)
-                splashScreen.ProcessCommand(SplashScreenCommand.SetDisplayText, text);
+            if (_splashScreen != null && text != null)
+                _splashScreen.ProcessCommand(SplashScreenCommand.SetDisplayText, text);
         }
 
         #endregion

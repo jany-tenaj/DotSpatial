@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Symbology.dll
 // Description:  Contains the business logic for symbology layers and symbol categories.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -102,7 +95,7 @@ namespace DotSpatial.Symbology
             base.IsExpanded = true;
             ContextMenuItems = new List<SymbologyMenuItem>();
             ContextMenuItems.Add(new SymbologyMenuItem("Remove Group", Remove_Click));
-            ContextMenuItems.Add(new SymbologyMenuItem("Zoom to Group", ZoomToGroupClick));
+            ContextMenuItems.Add(new SymbologyMenuItem("Zoom to Group", (sender, args) => ZoomToGroup()));
             ContextMenuItems.Add(new SymbologyMenuItem("Create new Group", CreateGroupClick));
             _selectionEnabled = true;
         }
@@ -182,8 +175,11 @@ namespace DotSpatial.Symbology
             foreach (ILayer layer in GetLayers())
             {
                 Envelope layerArea;
-                if (layer.ClearSelection(out layerArea)) changed = true;
-                affectedAreas.ExpandToInclude(layerArea);
+                if (layer.ClearSelection(out layerArea))
+                {
+                    changed = true;
+                    affectedAreas.ExpandToInclude(layerArea);
+                }
             }
             MapFrame.ResumeEvents();
 
@@ -205,9 +201,12 @@ namespace DotSpatial.Symbology
                 .Where(_ => _.SelectionEnabled && _.IsVisible))
             {
                 Envelope layerArea;
-                if (s.Select(tolerant, strict, mode, out layerArea)) somethingChanged = true;
-                affectedArea.ExpandToInclude(layerArea);
-				// removed by jany_: this selected only features of the first layer with features in the selected area, if user wanted to select features of another layer too they get ignored
+                if (s.Select(tolerant, strict, mode, out layerArea))
+                {
+                    somethingChanged = true;
+                    affectedArea.ExpandToInclude(layerArea);
+                }
+                // removed by jany_: this selected only features of the first layer with features in the selected area, if user wanted to select features of another layer too they get ignored
                 // added SelectPlugin enables user to choose the layers in which he wants to select features
 			    //if (somethingChanged)
                 //{
@@ -225,7 +224,7 @@ namespace DotSpatial.Symbology
         /// <inheritdoc />
         public virtual IList<ILayer> GetLayers()
         {
-            return _layers.Cast<ILayer>().ToList();
+            return _layers.ToList();
         }
 
         /// <inheritdoc />
@@ -260,8 +259,11 @@ namespace DotSpatial.Symbology
             {
                 if (s.SelectionEnabled == false) continue;
                 Envelope layerArea;
-                if (s.InvertSelection(tolerant, strict, mode, out layerArea)) somethingChanged = true;
-                affectedArea.ExpandToInclude(layerArea);
+                if (s.InvertSelection(tolerant, strict, mode, out layerArea))
+                {
+                    somethingChanged = true;
+                    affectedArea.ExpandToInclude(layerArea);
+                }
             }
             MapFrame.ResumeEvents();
             OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
@@ -278,8 +280,11 @@ namespace DotSpatial.Symbology
             foreach (ILayer s in GetLayers())
             {
                 Envelope layerArea;
-                if (s.UnSelect(tolerant, strict, mode, out layerArea)) somethingChanged = true;
-                affectedArea.ExpandToInclude(layerArea);
+                if (s.UnSelect(tolerant, strict, mode, out layerArea))
+                {
+                    somethingChanged = true;
+                    affectedArea.ExpandToInclude(layerArea);
+                }
             }
             ResumeEvents();
             OnSelectionChanged(); // fires only AFTER the individual layers have fired their events.
@@ -340,17 +345,10 @@ namespace DotSpatial.Symbology
         /// </summary>
         public override bool IsVisible
         {
-            get
-            {
-                foreach (ILayer lyr in GetLayers())
-                {
-                    if (lyr.IsVisible) return true;
-                }
-                return false;
-            }
+            get { return GetLayers().Any(lyr => lyr.IsVisible); }
             set
             {
-                foreach (ILayer lyr in GetLayers())
+                foreach (var lyr in GetLayers())
                 {
                     lyr.IsVisible = value;
                 }
@@ -366,20 +364,19 @@ namespace DotSpatial.Symbology
         {
             get
             {
+                var layers = GetLayers();
+                if (layers == null) return null;
+
                 Extent ext = null;
-                IList<ILayer> layers = GetLayers();
-                if (layers != null)
+                foreach (var extent in layers
+                    .Select(layer => layer.Extent)
+                    .Where(extent => extent != null && !extent.IsEmpty()) // changed by jany (2015-07-17) don't add extents of empty layers, because they cause a wrong overall extent 
+                    )
                 {
-                    foreach (ILayer layer in layers)
-                    {
-                        if (layer.Extent != null && !layer.Extent.IsEmpty()) // changed by jany (2015-07-17) don't add extents of empty layers, because they cause a wrong overall extent 
-                        {
-                            if (ext == null)
-                                ext = (Extent)layer.Extent.Clone();
-                            else
-                                ext.ExpandToInclude(layer.Extent);
-                        }
-                    }
+                    if (ext == null)
+                        ext = (Extent)extent.Clone();
+                    else
+                        ext.ExpandToInclude(extent);
                 }
                 return ext;
             }
@@ -445,17 +442,10 @@ namespace DotSpatial.Symbology
         /// </summary>
         public bool LayersVisible
         {
-            get
-            {
-                foreach (ILayer layer in GetLayers())
-                {
-                    if (layer.IsVisible) return true;
-                }
-                return false;
-            }
+            get { return GetLayers().Any(layer => layer.IsVisible); }
             set
             {
-                foreach (ILayer layer in GetLayers())
+                foreach (var layer in GetLayers())
                 {
                     layer.IsVisible = value;
                 }
@@ -470,7 +460,7 @@ namespace DotSpatial.Symbology
         {
             get
             {
-                return _layers.Cast<ILegendItem>();
+                return _layers;
             }
         }
 
@@ -519,9 +509,16 @@ namespace DotSpatial.Symbology
             OnRemoveItem();
         }
 
-        private void ZoomToGroupClick(object sender, EventArgs e)
+        /// <summary>
+        /// Zoom to group
+        /// </summary>
+        internal void ZoomToGroup()
         {
-            OnZoomToLayer(Extent.ToEnvelope());
+            var extent = Extent;
+            if (extent != null)
+            {
+                OnZoomToLayer(extent.ToEnvelope());
+            }
         }
 
         private void CreateGroupClick(object sender, EventArgs e)

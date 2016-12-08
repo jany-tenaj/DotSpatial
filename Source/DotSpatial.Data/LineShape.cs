@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -22,9 +15,6 @@ using System;
 
 namespace DotSpatial.Data
 {
-    /// <summary>
-    /// LineShape
-    /// </summary>
     public static class LineShape
     {
         /// <summary>
@@ -37,16 +27,16 @@ namespace DotSpatial.Data
         }
 
         /// <summary>
-        /// Calculates the intersection of a polygon shape without relying on the NTS geometry
+        /// Calculates the intersection of a polygon shape without relying on the NTS geometry.
         /// </summary>
-        /// <param name="lineShape"></param>
-        /// <param name="otherShape"></param>
-        /// <returns></returns>
+        /// <param name="lineShape">LineShape used for calculation.</param>
+        /// <param name="otherShape">Other shape of any feature type.</param>
+        /// <returns>True, if the given shape ranges intersect.</returns>
         public static bool Intersects(ShapeRange lineShape, ShapeRange otherShape)
         {
             if (lineShape.FeatureType != FeatureType.Line)
             {
-                throw new ArgumentException("The First parameter should be a point shape, but it was featuretype:" + lineShape.FeatureType);
+                throw new ArgumentException(string.Format(DataStrings.Shape_WrongFeatureType, "lineShape", "line", lineShape.FeatureType)); 
             }
 
             // Implmented in PolygonShape
@@ -74,9 +64,9 @@ namespace DotSpatial.Data
         /// <summary>
         /// Tests to see if any vertices from the other shape are coincident with a segment from this line shape.
         /// </summary>
-        /// <param name="lineShape"></param>
-        /// <param name="otherShape"></param>
-        /// <returns></returns>
+        /// <param name="lineShape">LineShape used for calculation.</param>
+        /// <param name="otherShape">Other shape of any feature type.</param>
+        /// <returns>True, if the shapes intersect.</returns>
         public static bool IntersectsVertex(ShapeRange lineShape, ShapeRange otherShape)
         {
             foreach (PartRange part in lineShape.Parts)
@@ -104,9 +94,9 @@ namespace DotSpatial.Data
         public static bool SegmentsIntersect(ShapeRange lineShape, ShapeRange otherShape)
         {
             if (lineShape.FeatureType != FeatureType.Line && lineShape.FeatureType != FeatureType.Polygon)
-                throw new ArgumentException("Expected lineShape to be a line or polygon feature type, got " + lineShape.FeatureType);
+                throw new ArgumentException(string.Format(DataStrings.Shape_WrongFeatureType, "lineShape", "line or polygon", lineShape.FeatureType));
             if (otherShape.FeatureType != FeatureType.Line && otherShape.FeatureType != FeatureType.Polygon)
-                throw new ArgumentException("Expected otherShape to be a line or polygon feature type, got " + otherShape.FeatureType);
+                throw new ArgumentException(string.Format(DataStrings.Shape_WrongFeatureType, "otherShape", "line or polygon", otherShape.FeatureType));
 
             foreach (PartRange part in lineShape.Parts)
             {

@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -23,7 +16,7 @@ using System;
 namespace DotSpatial.Data
 {
     /// <summary>
-    /// Polygon contains algorithms for the case where the current feature type is a polygon.  The shape may be single or multi-part.
+    /// Polygon contains algorithms for the case where the current feature type is a polygon. The shape may be single or multi-part.
     /// </summary>
     public static class PolygonShape
     {
@@ -39,14 +32,14 @@ namespace DotSpatial.Data
         /// <summary>
         /// Calculates the intersection of a polygon shape without relying on the NTS geometry
         /// </summary>
-        /// <param name="polygonShape"></param>
-        /// <param name="otherShape"></param>
-        /// <returns></returns>
+        /// <param name="polygonShape">Polygon shape used for calculation.</param>
+        /// <param name="otherShape">Other shape of any feature type.</param>
+        /// <returns>True, if the given shape ranges intersect.</returns>
         public static bool Intersects(ShapeRange polygonShape, ShapeRange otherShape)
         {
             if (polygonShape.FeatureType != FeatureType.Polygon)
             {
-                throw new ArgumentException("The First parameter should be a point shape, but it was featuretype:" + polygonShape.FeatureType);
+                throw new ArgumentException(string.Format(DataStrings.Shape_WrongFeatureType, "polygonShape", "polygon", polygonShape.FeatureType));
             }
 
             // Extents will have already been tested by this point.
@@ -76,9 +69,9 @@ namespace DotSpatial.Data
         /// This cycles through all the vertices, which are stored as {X1, Y1, X2, Y2...Xn, Yn} and tests
         /// if any of those vertices falls within the polygon shape.
         /// </summary>
-        /// <param name="polygonShape"></param>
-        /// <param name="otherShape"></param>
-        /// <returns></returns>
+        /// <param name="polygonShape">Polygon shape used for calculation.</param>
+        /// <param name="otherShape">Other shape of any feature type.</param>
+        /// <returns>True, if the given shape ranges intersect.</returns>
         public static bool ContainsVertex(ShapeRange polygonShape, ShapeRange otherShape)
         {
             foreach (PartRange otherPart in otherShape.Parts)
@@ -93,12 +86,11 @@ namespace DotSpatial.Data
 
         /// <summary>
         /// For each coordinate in the other part, if it falls in the extent of this polygon, a
-        /// ray crossing test is used for point in polygon testing.  If it is not in the extent,
-        /// it is skipped.
+        /// ray crossing test is used for point in polygon testing. If it is not in the extent, it is skipped.
         /// </summary>
         /// <param name="polygonShape">The part of the polygon to analyze polygon</param>
         /// <param name="otherPart">The other part</param>
-        /// <returns>Boolean, true if any coordinate falls inside the polygon</returns>
+        /// <returns>Boolean, true if any coordinate falls inside the polygon.</returns>
         private static bool ContainsVertex(ShapeRange polygonShape, PartRange otherPart)
         {
             // Create an extent for faster checking in most cases

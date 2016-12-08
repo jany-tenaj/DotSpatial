@@ -3,13 +3,6 @@
 // Description:  The data access libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is DotSpatial
 //
@@ -24,7 +17,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using GeoAPI.Geometries;
 
 namespace DotSpatial.Data
@@ -328,7 +320,7 @@ namespace DotSpatial.Data
             IndexMode = true;
             Filename = fileName;
             FeatureType = FeatureType.MultiPoint;
-            Header = new ShapefileHeader(fileName);
+            Header = new ShapefileHeader(Filename);
 
             switch (Header.ShapeType)
             {
@@ -345,8 +337,8 @@ namespace DotSpatial.Data
 
             Extent = Header.ToExtent();
             Name = Path.GetFileNameWithoutExtension(fileName);
-            Attributes.Open(fileName);
-            FillPoints(fileName, progressHandler);
+            Attributes.Open(Filename);
+            FillPoints(Filename, progressHandler);
             ReadProjection();
         }
 
@@ -373,15 +365,15 @@ namespace DotSpatial.Data
             {
                 Header.ShapeType = ShapeType.MultiPointZ;
             }
-            HeaderSaveAs(fileName);
+            HeaderSaveAs(Filename);
 
             if (IndexMode)
             {
-                SaveAsIndexed(fileName);
+                SaveAsIndexed(Filename);
                 return;
             }
 
-            var bbWriter = new BufferedBinaryWriter(fileName);
+            var bbWriter = new BufferedBinaryWriter(Filename);
             var indexWriter = new BufferedBinaryWriter(Header.ShxFilename);
             int fid = 0;
             int offset = 50; // the shapefile header starts at 100 bytes, so the initial offset is 50 words
@@ -574,7 +566,7 @@ namespace DotSpatial.Data
             shxStream.Close();
 
             offset += contentLength;
-            WriteFileLength(Filename, offset);
+            WriteFileLength(fileName, offset);
             UpdateAttributes();
             SaveProjection();
         }

@@ -2,12 +2,7 @@
 // Product Name: DotSpatial.Data.dll
 // Description:  The data access libraries for the DotSpatial project.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
+//
 // The Original Code is from MapWindow.dll version 6.0
 // The Initial Developer of this Original Code is Ted Dunsford. Created Before 2010.
 // Contributor(s): (Open source contributors should list themselves and their modifications here).
@@ -25,12 +20,24 @@ namespace DotSpatial.Data
     /// </summary>
     public interface IDataSet : IDisposable, IDisposeLock, IReproject
     {
+        #region Properties
+
         /// <summary>
         /// Gets or sets the extent for the dataset.  Usages to Envelope were replaced
         /// as they required an explicit using to DotSpatial.Topology which is not
         /// as intuitive.  Extent.ToEnvelope() and new Extent(myEnvelope) convert them.
         /// </summary>
         Extent Extent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the absolute path and fileName for this dataset. This is null if the DataSet has no file.
+        /// </summary>
+        string Filename { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relative path to the underlying file. This is only meant to be used for serialization.
+        /// </summary>
+        string FilePath { get; set; }
 
         /// <summary>
         /// True if the dispose method has been called on this dataset.
@@ -58,10 +65,16 @@ namespace DotSpatial.Data
         /// </summary>
         string TypeName { get; set; }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// This closes the data set.  Many times this will simply do nothing, but
         /// in some cases this may close an open connection to a data source.
         /// </summary>
         void Close();
+
+        #endregion
     }
 }

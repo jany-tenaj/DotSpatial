@@ -1,7 +1,7 @@
 ﻿// *******************************************************************************************************
 // Product: DotSpatial.Tools.ClipPolygonWithPolygon.cs
 // Description:  Clip a polygon with another polygon.
-// Copyright & License: See www.DotSpatial.org.
+
 // *******************************************************************************************************
 // Contributor(s): Open source contributors may list themselves and their modifications here.
 // Contribution of code constitutes transferral of copyright from authors to DotSpatial copyright holders. 
@@ -106,8 +106,7 @@ namespace DotSpatial.Tools
         /// <param name="cancelProgressHandler">The progress handler for progress message updates</param>
         /// <returns></returns>
         /// Ping delete "static" for external testing
-        public bool Execute(
-            IFeatureSet input, IFeatureSet input2, IFeatureSet output, ICancelProgressHandler cancelProgressHandler)
+        public bool Execute(IFeatureSet input, IFeatureSet input2, IFeatureSet output, ICancelProgressHandler cancelProgressHandler)
         {
             // Validates the input and output data
             if (input == null || input2 == null || output == null)
@@ -138,6 +137,11 @@ namespace DotSpatial.Tools
                 output.Features.Add(fe);
             }
 
+            // Setting the AttributesPopulated to true here means the output shapefile will get attribute columns copied from
+            // the source file. This problem occurs when using the ClipPolygonWithPolygon tool due to how the input/output files
+            // are loaded. https://github.com/DotSpatial/DotSpatial/issues/892
+            output.AttributesPopulated = true;
+
             output.SaveAs(output.Filename, true);
             return true;
         }
@@ -151,8 +155,9 @@ namespace DotSpatial.Tools
             _inputParam[0] = new FeatureSetParam(TextStrings.Featuresettoclip);
             _inputParam[1] = new PolygonFeatureSetParam(TextStrings.Clipbounds);
 
-            _outputParam = new Parameter[1];
+            _outputParam = new Parameter[2];
             _outputParam[0] = new FeatureSetParam(TextStrings.Clippedfeatureset);
+            _outputParam[1] = new BooleanParam(TextStrings.OutputParameter_AddToMap, TextStrings.OutputParameter_AddToMap_CheckboxText, true);
         }
 
         #endregion

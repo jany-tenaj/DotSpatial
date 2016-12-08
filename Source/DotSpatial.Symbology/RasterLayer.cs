@@ -3,13 +3,6 @@
 // Description:  The core libraries for the DotSpatial project.
 //
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from MapWindow.dll version 6.0
 //
@@ -150,12 +143,12 @@ namespace DotSpatial.Symbology
 
             IImageData result = DataManager.DefaultDataManager.CreateImage(fileName, rows, cols, false, progressHandler, bandType);
             int numBlocks = 1;
-            const int maxRC = 8000 * 8000;
-            if (rows * cols > maxRC)
+            const int maxRc = 8000 * 8000;
+            if (rows * cols > maxRc)
             {
-                numBlocks = Convert.ToInt32(Math.Ceiling(maxRC / (double)cols));
+                numBlocks = Convert.ToInt32(Math.Ceiling(maxRc / (double)cols));
             }
-            int blockRows = maxRC / cols;
+            int blockRows = maxRc / cols;
             ProjectionHelper ph = new ProjectionHelper(DataSet.Extent, new Rectangle(0, 0, cols, rows));
             for (int iblock = 0; iblock < numBlocks; iblock++)
             {
@@ -496,17 +489,30 @@ namespace DotSpatial.Symbology
         }
 
         /// <summary>
-        /// Gets the fileName where this raster is saved.
+        /// Gets the file name where this raster is saved.
         /// </summary>
         [Category("Raster Properties")]
-        [Description("The fileName of this raster.")]
-        [Serialize("Filename", ConstructorArgumentIndex = 0)]
-        public virtual string Filename
+        [Description("The file name of this raster.")]
+        public string Filename
         {
             get
             {
                 if (DataSet != null) return DataSet.Filename;
                 return "No Raster Specified";
+            }
+        }
+
+        /// <summary>
+        /// Gets the relative file path to where this raster is saved.
+        /// </summary>
+        [Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [Serialize("FilePath", ConstructorArgumentIndex = 0)]
+        public string FilePath
+        {
+            get
+            {
+                if (DataSet != null) return DataSet.FilePath;
+                return null;
             }
         }
 

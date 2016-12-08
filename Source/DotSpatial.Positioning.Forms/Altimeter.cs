@@ -2,13 +2,6 @@
 // Product Name: DotSpatial.Positioning.Forms.dll
 // Description:  A library for managing GPS connections.
 // ********************************************************************************************************
-// The contents of this file are subject to the MIT License (MIT)
-// you may not use this file except in compliance with the License. You may obtain a copy of the License at
-// http://dotspatial.codeplex.com/license
-//
-// Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
-// ANY KIND, either expressed or implied. See the License for the specific language governing rights and
-// limitations under the License.
 //
 // The Original Code is from http://gps3.codeplex.com/ version 3.0
 //
@@ -39,7 +32,7 @@ namespace DotSpatial.Positioning.Forms
     /// represent (from longest to shortest) hundreds, thousands and tens-of-thousands. The
     /// display of the Altimeter is controlled via the <strong>Value</strong> property.
     /// </remarks>
-    [ToolboxBitmap(typeof(Altimeter))]
+    [ToolboxBitmap(typeof(Altimeter), "Resources.Altimeter.bmp")]
     [DefaultProperty("Value")]
     [ToolboxItem(true)]
     public sealed class Altimeter : PolarControl

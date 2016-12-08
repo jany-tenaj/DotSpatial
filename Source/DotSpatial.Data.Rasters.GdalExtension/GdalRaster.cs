@@ -173,8 +173,8 @@ namespace DotSpatial.Data.Rasters.GdalExtension
                 List<T> result = new List<T>();
                 foreach (long index in indices)
                 {
-                    int row = (int)index / NumColumnsInFile;
-                    int col = (int)index % NumColumnsInFile;
+                    int row = (int)(index / NumColumnsInFile);
+                    int col = (int)(index % NumColumnsInFile);
 
                     T[] data = new T[1];
 
@@ -582,6 +582,9 @@ namespace DotSpatial.Data.Rasters.GdalExtension
             }
             double[] affine = new double[6];
             _dataset.GetGeoTransform(affine);
+            // in gdal (row,col) coordinates are defined relative to the top-left corner of the top-left cell
+            // shift them by half a cell to give coordinates relative to the center of the top-left cell
+            affine = (new AffineTransform(affine)).TransfromToCorner(0.5, 0.5);
             ProjectionString = projString;
             Bounds = new RasterBounds(base.NumRows, base.NumColumns, affine);
             PixelSpace = Marshal.SizeOf(typeof(T));
