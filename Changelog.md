@@ -2,8 +2,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+Be aware that code written for 1.9 will not work out of the box because DotSpatial.Topology was replaced by DotSpatial.GeoAPI and DotSpatial.NetTopologySuite (#786).
+
 ### Added
-- Switched to NTS/GeoAPI instead of DotSpatial.Topology (#633, #404) 
+- Switched to NTS/GeoAPI instead of DotSpatial.Topology (#633, #404, #786) 
 - Tag property in ActionItem (#338)
 - Added property AppManager.BaseDirectory which allows to change base directory for plugins. (#758)
 - Support for formatted ESRI projection files (#793)
@@ -11,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - "Add layer to Map"-checkbox to the ToolDialog (#147)
 - CopySubset overloads with withAttributes parameters
 - Jenks Natural Breaks support in categories binning.
+- Test that checks correct creation of GpggkSentence objects from string
 
 ### Changed
 - GdalExtension: Updated to GDAL 1.1.11
@@ -23,8 +27,10 @@ All notable changes to this project will be documented in this file.
 - Renamed IntervalMethod.Quantile to IntervalMethod.EqualFrequency for better consistency.
 - IHeaderControl.Add() now returns object which represents added GUI item.
 - Added authority and authority code as optional parameters to method ProjectionInfo.FromProj4String.
-- Update proj4 strings to EPSG db 8.9 (#870)
+- Update proj4 strings to EPSG db 9.0 (#870)
 - ShapeFile Numeric columns now loaded into double instead of string for up to 15 decimal digits (#893)
+- DS Feature refactorings (#906)
+- LegendText ReadOnly (#750)
 
 ### Removed
 - Removed DotSpatial.Topology assembly (#633)
@@ -80,3 +86,13 @@ All notable changes to this project will be documented in this file.
 - Attributes now preserved from input to output when performing ClipPolygonWithPolygon tool (#892)
 - FeatureSet.Open(".shp") throws wrong error if .shx is missing (#903)
 - Wrong Expression at Expression Editor mess up Layer Feature Set. (#904)
+- Incorrect selection of polygons with Holes (#905)
+- ExtendBuffer Map property fixed (#661)
+- Polygon Hatch Style is not displayed (#851)
+- Is this a bug in DotSpatial.WebControls? (#496)
+- NmeaSentence.ParseDilution produces an exception when an nmea string with dilution of precision not greater than 0 is used. (#909)
+- Errors in SetPropertiesFromSentence functions of GpggkSentence, GpgsvSentence, GprmcSentence
+- Allow feature.DataRow = null in Shape-constructor (#917)
+- DS uses InRamImage although GDAL provider was selected (#931)
+- Disable editing in identify window (#930)
+- ArcMap does show M and Z as NaN (#935)
