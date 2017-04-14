@@ -23,7 +23,7 @@ This explains the easiest way to build your own GIS program based on DotSpatial.
 8. Select the AppManager and add it to your form.
 9. Rename the added appManager1 to appManager.
 10. Add the following code to your MainForm.cs
-[import, template:"default", lang:"csharp"](../Source/DemoMap/MainForm.cs)
+[import, lang:"csharp"](../Source/DemoMap/MainForm.cs)
 12. Compile.
 13. Add the plugins folder to the folder your program was compiled to.
 
