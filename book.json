@@ -1,14 +1,22 @@
 {
-"root": "./docs",
-"plugins": [
-"include-codeblock",
-"ace"
-],
-"pluginsConfig": {
-"include-codeblock": {
-"template": "ace",
-"unindent": true
-}
-}
+    "root": "./docs",
+    "plugins": 
+        [
+            "include-codeblock",
+            "ace"
+        ],
+    "pluginsConfig": 
+    {
+    
+        "include-codeblock": 
+        {
+            "template": "ace",
+            "unindent": true
+        },
+        "fontSettings": 
+        {
+            "theme": "white"
+        }
+    }
 }
 
