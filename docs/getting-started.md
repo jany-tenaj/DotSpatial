@@ -25,7 +25,11 @@ This explains the easiest way to build your own GIS program based on DotSpatial.
 * Add the following code to your MainForm.cs
   [import, lang:"csharp"](../Source/DemoMap/MainForm.cs)
 * Compile.
-* Add the following plugins to the plugins folder in the folder your program was compiled to.
+* Add the following [plugins](../the-plugins.md) to the plugins folder in the folder your program was compiled to.
+  * DotSpatial.Plugins.SimpleLegend
+  * DotSpatial.Plugins.SimpleMap
+
+Now you have a basic GIS program with a legend, a map and some basic tools. You can extent it either by adding more of the existing plugins or writing your own plugins.
 
 
 
