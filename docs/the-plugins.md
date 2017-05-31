@@ -2,28 +2,28 @@ The [Latest available build from master branch](https://ci.appveyor.com/api/proj
 
 | Plugin | Function |
 | :--- | :--- |
-| About |  |
+| About | An about window. |
 | Contourer |  |
 | FindFeature |  |
-| Help |  |
-| Measure |  |
-| ScaleBar |  |
-| ShapeEditor |  |
-| SimpleLegend |  |
-| SimpleMap |  |
+| Help | A button that sends you to the DotSpatial documentation page. |
+| Measure | Can be used to measure features. |
+| ScaleBar | A scalebar that can be used to show and change the maps scale. |
+| ShapeEditor | An editor for creating new layers, features and moving vertices. |
+| SimpleLegend | A simple legend. |
+| SimpleMap | A simple map. |
 | SpatialLite |  |
-| StatusBarImprovements |  |
-| TableEditor |  |
-| ToolManager |  |
-| Data.Rasters.GdalExtension |  |
+| StatusBarImprovements | Shows the mouse coordinates and the number of selected features in the status bar. |
+| TableEditor | Adds the possibility to show the attributes table of the layers. |
+| ToolManager | Shows the tools in a tab. For this to work, make sure to copy the tools folder (see picture below) to your project, too. |
+| Data.Rasters.GdalExtension | This can be used to load layers via GDAL. |
 | ClickOnceUpdater |  |
 | ExtensionManager |  |
 | LiDAR |  |
-| MapWindowProjectFileCompatibility |  |
+| MapWindowProjectFileCompatibility | Allows to open MapWindow 4 projects. |
 | ScriptRunner |  |
 | Taudem |  |
-| WebMap |  |
-| WFSClient |  |
+| WebMap | A plugin that can show online maps as layers. |
+| WFSClient | Used to show WFS data in layers. |
 
 
 
